@@ -1,5 +1,7 @@
 #include <glut.h>
 #include "physics.h"
+#include "camera.h"
+#include "input.h"
 
 const int TOY_COUNT = 5;
 Toy listToys[TOY_COUNT];
@@ -11,6 +13,11 @@ void init() {
 
     // ĐƯA VÀO ĐÂY: Khởi tạo vị trí gấu và cần gắp khi vừa mở game
     initPhysics(listToys, TOY_COUNT);
+    
+    // [Trang] Liên kết mảng dữ liệu đồ chơi sang hệ thống input bàn phím để phục vụ phím R
+    InitInputSystem(listToys, TOY_COUNT);
+
+    glEnable(GL_DEPTH_TEST); // Bật kiểm thử chiều sâu để hiển thị đúng không gian 3D
 }
 
 // --- HÀM UPDATE LOGIC KHUNG HÌNH ---
@@ -24,7 +31,9 @@ void idle() {
 // --- HÀM VẼ CHÍNH ---
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
+
+    // Gọi hàm cấu hình Camera của Trang (Truyền vị trí thực tế của cần gắp từ physics sang)
+    SetupCamera(clawPosition);
 
     // Gọi các hàm vẽ khung máy, vẽ gấu từ render.cpp ...
 
@@ -42,6 +51,10 @@ int main(int argc, char** argv) {
 
     glutDisplayFunc(display);
     glutIdleFunc(idle); // Đăng ký hàm idle để chạy logic vật lý liên tục
+
+    // [Trang] Đăng ký sự kiện bàn phím cho hệ thống tương tác
+    glutKeyboardFunc(KeyboardHandler);   // Xử lý phím thường (Space, C, R)
+    glutSpecialFunc(SpecialKeyHandler);  // Xử lý phím đặc biệt (Các phím mũi tên)
 
     glutMainLoop();
     return 0;
