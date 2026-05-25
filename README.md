@@ -14,7 +14,7 @@ MayGapThu3D_Nhom15_23CN1/    # Thư mục gốc
 │   ├── sky.bmp
 │   └── ... (các file ảnh .bmp dùng cho máy gắp thú)
 │
-├── imageloader.cpp              # Đổi đuôi .cpp của thầy sang .c để làm nền tảng đọc ảnh
+├── imageloader.cpp              # để làm nền tảng đọc ảnh
 ├── imageloader.h
 │
 ├── main.cpp                     # File chạy chính của nhóm 15 (Đổi từ main.cpp của thầy)
