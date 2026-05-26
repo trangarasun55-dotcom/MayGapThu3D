@@ -58,4 +58,9 @@ extern const float MAX_Z;
 extern const float DROP_HOLE_X;
 extern const float DROP_HOLE_Z;
 
+// Biến quản lý trạng thái kéo thả chuột
+extern int lastMouseX;
+extern int lastMouseY;
+extern bool isDragging;
+
 #endif

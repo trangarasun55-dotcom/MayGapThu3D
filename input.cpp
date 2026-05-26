@@ -17,20 +17,34 @@ void keyboard(unsigned char key, int x, int y) {
         resetPhysics(); // Reset lại vị trí gấu
         break;
 
-        // Xoay Camera bằng W, A, S, D
-    case 'a': case 'A':
-        cameraAngleX -= 5.0f;
+    case '1': //chính diện
+        cameraAngleX = 0.0f;
+        cameraAngleY = 30.0f;
+        cameraDistance = 15.0f;
         break;
-    case 'd': case 'D':
-        cameraAngleX += 5.0f;
+
+    case '2': //phải
+        cameraAngleX = 90.0f;
+        cameraAngleY = 25.0f;
+        cameraDistance = 12.0f;
         break;
-    case 'w': case 'W':
-        cameraAngleY += 5.0f;
-        if (cameraAngleY > 89.0f) cameraAngleY = 89.0f; // Tránh lật ngược camera
+
+	case '3': //phía sau
+        cameraAngleX = 180.0f;
+        cameraAngleY = 35.0f;
+        cameraDistance = 14.0f;
         break;
-    case 's': case 'S':
-        cameraAngleY -= 5.0f;
-        if (cameraAngleY < 5.0f) cameraAngleY = 5.0f; // Tránh nhìn xuyên gầm máy
+
+	case '4': //trái
+        cameraAngleX = -90.0f;
+        cameraAngleY = 20.0f;
+        cameraDistance = 10.0f;
+        break;
+
+	case '5': //trên cao
+        cameraAngleX = 45.0f;
+        cameraAngleY = 70.0f;
+        cameraDistance = 18.0f;
         break;
     }
     glutPostRedisplay();
@@ -48,4 +62,44 @@ void specialKeyboard(int key, int x, int y) {
         }
     }
     glutPostRedisplay();
+}
+
+void mouseButton(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON)
+    {
+        if (state == GLUT_DOWN)
+        {
+            isDragging = true;
+            lastMouseX = x;
+            lastMouseY = y;
+        }
+        else
+        {
+            isDragging = false;
+        }
+    }
+}
+
+void mouseMotion(int x, int y)
+{
+    if (isDragging)
+    {
+        int dx = x - lastMouseX;
+        int dy = y - lastMouseY;
+
+        cameraAngleX += dx * 0.5f;
+        cameraAngleY += dy * 0.5f;
+
+        if (cameraAngleY > 89.0f)
+            cameraAngleY = 89.0f;
+
+        if (cameraAngleY < 5.0f)
+            cameraAngleY = 5.0f;
+
+        lastMouseX = x;
+        lastMouseY = y;
+
+        glutPostRedisplay();
+    }
 }
