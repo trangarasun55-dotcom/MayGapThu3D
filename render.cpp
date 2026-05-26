@@ -6,9 +6,21 @@
 #include "imageloader.h"
 
 GLuint texture_bac;
-GLuint texture_hong;
+GLuint texture_hong_pastel;
 GLuint texture_kem;
-GLuint texture_xanhmint;
+GLuint texture_xanh_mint;
+
+GLuint texture_kim;
+GLuint texture_vang;
+
+GLuint texture_longxam;
+GLuint texture_longxanhduong;
+GLuint texture_longxanhla;
+GLuint texture_longhong;
+GLuint texture_longkem;
+
+GLuint texture_xanhngoc;
+GLuint texture_pink;
 
 void drawCube(float x, float y, float z);
 
@@ -122,7 +134,7 @@ void drawMachineBody()
     // THÂN DƯỚI
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_hong);
+    glBindTexture(GL_TEXTURE_2D, texture_xanhngoc);
 
     glPushMatrix();
 
@@ -138,7 +150,7 @@ void drawMachineBody()
     // CỬA NHẬN QUÀ
     // =========================
 
-    glColor3f(0.75f, 0.9f, 0.85f);
+    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint);
 
     glPushMatrix();
 
@@ -149,7 +161,7 @@ void drawMachineBody()
     glPopMatrix();
 
 
-    glColor3f(1.0f, 0.85f, 0.88f);
+    glBindTexture(GL_TEXTURE_2D, texture_pink);
 
     glPushMatrix();
 
@@ -160,7 +172,7 @@ void drawMachineBody()
     glPopMatrix();
 
 
-    glColor3f(0.75f, 0.9f, 0.85f);
+    glBindTexture(GL_TEXTURE_2D, texture_kem);
 
     glPushMatrix();
 
@@ -190,7 +202,7 @@ void drawMachineBody()
     // 4 CỘT GÓC
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanhmint);
+    glBindTexture(GL_TEXTURE_2D, texture_kim);
 
     float pillarOffset = 1.7f;
     float pillarSize = 0.16f;
@@ -227,7 +239,7 @@ void drawMachineBody()
     // KHỐI DI CHUYỂN TRÊN TRẦN
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanhmint);
+    glBindTexture(GL_TEXTURE_2D, texture_kim);
 
     glPushMatrix();
 
@@ -246,7 +258,7 @@ void drawMachineBody()
     // BỆ ĐIỀU KHIỂN
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_hong);
+    glBindTexture(GL_TEXTURE_2D, texture_pink);
 
     glPushMatrix();
 
@@ -262,7 +274,7 @@ void drawMachineBody()
     // JOYSTICK
     // =========================
 
-    glColor3f(0.7f, 1.0f, 0.8f);
+    glBindTexture(GL_TEXTURE_2D, texture_bac);
 
     glPushMatrix();
 
@@ -274,7 +286,7 @@ void drawMachineBody()
 
     GLUquadric* quad = gluNewQuadric();
 
-    glColor3f(0.8f, 0.8f, 0.8f);
+    glBindTexture(GL_TEXTURE_2D, texture_vang);
 
     glPushMatrix();
 
@@ -290,7 +302,7 @@ void drawMachineBody()
     // NÚT BẤM
     // =========================
 
-    glColor3f(0.7f, 1.0f, 0.8f);
+    glBindTexture(GL_TEXTURE_2D, texture_vang);
 
     glPushMatrix();
 
@@ -305,7 +317,7 @@ void drawMachineBody()
     gluDeleteQuadric(quad);
 }
 
-void drawMachineGlass()
+void drawMachineGlass() // Mặt kính của máy gắp
 {
     glDisable(GL_TEXTURE_2D);
 
@@ -332,7 +344,7 @@ void drawMachineGlass()
     glEnable(GL_TEXTURE_2D);
 }
 
-void drawClaw()
+void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp và 3 càng gắp
 {
     GLUquadric* quad = gluNewQuadric();
 
@@ -347,7 +359,7 @@ void drawClaw()
     // DÂY TREO
     // =========================
 
-    glColor3f(0.85f, 0.85f, 0.85f);
+    glBindTexture(GL_TEXTURE_2D, texture_bac);
 
     glPushMatrix();
 
@@ -372,7 +384,7 @@ void drawClaw()
     // ĐẦU GẮP
     // =========================
 
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glBindTexture(GL_TEXTURE_2D, texture_bac);
 
     glutSolidSphere(0.18f, 20, 20);
 
@@ -382,6 +394,8 @@ void drawClaw()
 
     for (int i = 0; i < 3; i++)
     {
+        glBindTexture(GL_TEXTURE_2D, texture_bac);
+
         glPushMatrix();
 
         glRotatef(i * 120.0f, 0, 1, 0);
@@ -413,7 +427,7 @@ void drawLabubu(float x, float y, float z, float r, float g, float b, float rota
     glRotatef(rotateY, 0, 1, 0);
 
     // THÂN
-    glColor3f(r, g, b);
+    glBindTexture(GL_TEXTURE_2D, texture_longxanhla);
 
     glPushMatrix();
     glScalef(0.7f, 0.65f, 0.7f);
@@ -439,7 +453,7 @@ void drawLabubu(float x, float y, float z, float r, float g, float b, float rota
     glPopMatrix();
 
     // MẮT
-    glColor3f(0.2f, 0.1f, 0.1f);
+    glColor3f(0.0f, 0.0f, 0.0f);
 
     glPushMatrix();
     glTranslatef(-0.12f, 0.48f, 0.38f);
@@ -452,7 +466,7 @@ void drawLabubu(float x, float y, float z, float r, float g, float b, float rota
     glPopMatrix();
 
     // MIỆNG
-    glColor3f(0.5f, 0.2f, 0.2f);
+    glBindTexture(GL_TEXTURE_2D, texture_pink);
 
     glBegin(GL_LINE_STRIP);
 
@@ -467,7 +481,7 @@ void drawLabubu(float x, float y, float z, float r, float g, float b, float rota
     glEnd();
 
     // MÁ HỒNG
-    glColor3f(1.0f, 0.6f, 0.7f);
+    glBindTexture(GL_TEXTURE_2D, texture_hong_pastel);
 
     glPushMatrix();
     glTranslatef(-0.22f, 0.38f, 0.36f);
@@ -593,14 +607,41 @@ void initGraphics()
     texture_bac =
         loadTexture("data/bac.bmp");
 
-    texture_hong =
+    texture_hong_pastel =
         loadTexture("data/hong_pastel.bmp");
 
     texture_kem =
         loadTexture("data/kem.bmp");
 
-    texture_xanhmint =
+    texture_xanh_mint =
         loadTexture("data/xanh_mint.bmp");
+    
+    texture_longxanhla =
+        loadTexture("data/longxanhla.bmp");
+
+	texture_longxanhduong =
+		loadTexture("data/longxanhduong.bmp");
+
+	texture_longxam =
+		loadTexture("data/longxam.bmp");
+
+    texture_longkem =
+        loadTexture("data/longkem.bmp");
+
+    texture_longhong =
+        loadTexture("data/longhong.bmp");
+
+    texture_xanhngoc =
+        loadTexture("data/xanhngoc.bmp");
+
+    texture_pink =
+        loadTexture("data/pink.bmp");
+
+    texture_kim =
+        loadTexture("data/kim.bmp");
+
+    texture_vang =
+        loadTexture("data/vang.bmp");
 
     glClearColor(
         0.95f,
