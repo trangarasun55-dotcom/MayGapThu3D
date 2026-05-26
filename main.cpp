@@ -36,7 +36,8 @@ void display() {
     // Gọi hàm cấu hình Camera của Trang (Truyền vị trí thực tế của cần gắp từ physics sang)
     SetupCamera(clawPosition);
 
-    // Gọi các hàm vẽ khung máy, vẽ gấu từ render.cpp ...
+    // Gọi các hàm vẽ khung máy, vẽ gấu từ render.cpp 
+	renderScene();
 
     glutSwapBuffers();
 }
