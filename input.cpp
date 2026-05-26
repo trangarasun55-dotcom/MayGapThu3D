@@ -66,6 +66,7 @@ void specialKeyboard(int key, int x, int y) {
 
 void mouseButton(int button, int state, int x, int y)
 {
+    // CLICK CHUỘT TRÁI
     if (button == GLUT_LEFT_BUTTON)
     {
         if (state == GLUT_DOWN)
@@ -79,6 +80,26 @@ void mouseButton(int button, int state, int x, int y)
             isDragging = false;
         }
     }
+
+    // CUỘN LÊN -> ZOOM IN
+    if (button == 3)
+    {
+        cameraDistance -= 1.0f;
+
+        if (cameraDistance < 5.0f)
+            cameraDistance = 5.0f;
+    }
+
+    // CUỘN XUỐNG -> ZOOM OUT
+    if (button == 4)
+    {
+        cameraDistance += 1.0f;
+
+        if (cameraDistance > 30.0f)
+            cameraDistance = 30.0f;
+    }
+
+    glutPostRedisplay();
 }
 
 void mouseMotion(int x, int y)
@@ -88,11 +109,11 @@ void mouseMotion(int x, int y)
         int dx = x - lastMouseX;
         int dy = y - lastMouseY;
 
-        cameraAngleX += dx * 0.5f;
-        cameraAngleY += dy * 0.5f;
+        cameraAngleX += dx * 0.4f;
+        cameraAngleY += dy * 0.4f;
 
-        if (cameraAngleY > 89.0f)
-            cameraAngleY = 89.0f;
+        if (cameraAngleY > 85.0f)
+            cameraAngleY = 85.0f;
 
         if (cameraAngleY < 5.0f)
             cameraAngleY = 5.0f;

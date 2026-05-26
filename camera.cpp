@@ -20,9 +20,19 @@ void SetupCamera() {
         float eyeZ = cameraDistance * cos(radY) * cos(radX);
 
         // Nhìn thẳng vào tâm máy gắp thú (tọa độ 0, 3, 0)
-        gluLookAt(eyeX, eyeY + 3.0f, eyeZ,
-            0.0f, 3.0f, 0.0f,
-            0.0f, 1.0f, 0.0f);
+        gluLookAt(
+            eyeX,
+            eyeY + 2.5f,
+            eyeZ,
+
+            clawPosition.x,
+            1.5f,
+            clawPosition.z,
+
+            0.0f,
+            1.0f,
+            0.0f
+        );
     }
     else {
         // Góc nhìn cận cảnh di chuyển bám sát theo vị trí càng gắp
