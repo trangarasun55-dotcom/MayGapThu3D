@@ -61,6 +61,9 @@ GLuint loadTexture(const char* filename)
         GL_TEXTURE_MAG_FILTER,
         GL_LINEAR);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     delete[] pixels;
 
     return textureID;
@@ -385,8 +388,8 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
     // =========================
 
     glBindTexture(GL_TEXTURE_2D, texture_kim);
-
-    glutSolidSphere(0.18f, 20, 20);
+    gluQuadricTexture(quad, GL_TRUE);
+    gluSphere(quad, 0.18f, 20, 20);
 
     // =========================
     // 3 CÀNG GẮP
@@ -406,7 +409,7 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
 
         glScalef(0.06f, 0.55f, 0.06f);
 
-        glutSolidSphere(1.0f, 20, 20);
+        gluSphere(quad, 1.0f, 20, 20);
 
         glPopMatrix();
     }
@@ -418,7 +421,11 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
 
 void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
 {
-    glDisable(GL_TEXTURE_2D);
+    GLUquadric* quad = gluNewQuadric();
+
+    gluQuadricTexture(quad, GL_TRUE);
+
+    glEnable(GL_TEXTURE_2D);
 
     glPushMatrix();
 
@@ -427,34 +434,33 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
     glRotatef(rotateY, 0, 1, 0);
 
     // THÂN
-    glEnable(GL_TEXTURE_2D);
-
     glBindTexture(GL_TEXTURE_2D, furTexture);
 
     glPushMatrix();
     glScalef(0.7f, 0.65f, 0.7f);
-    glutSolidSphere(0.5f, 40, 40);
+    gluSphere(quad, 0.5f, 40, 40);
     glPopMatrix();
 
     // ĐẦU
     glPushMatrix();
     glTranslatef(0.0f, 0.45f, 0.0f);
-    glutSolidSphere(0.45f, 40, 40);
+    gluSphere(quad, 0.45f, 40, 40);
     glPopMatrix();
 
     // TAI TRÁI
     glPushMatrix();
     glTranslatef(-0.23f, 0.8f, 0.0f);
-    glutSolidSphere(0.18f, 30, 30);
+    gluSphere(quad, 0.18f, 30, 30);
     glPopMatrix();
 
     // TAI PHẢI
     glPushMatrix();
     glTranslatef(0.23f, 0.8f, 0.0f);
-    glutSolidSphere(0.18f, 30, 30);
+    gluSphere(quad, 0.18f, 30, 30);
     glPopMatrix();
 
     // MẮT
+    glDisable(GL_TEXTURE_2D);
     glColor3f(0.0f, 0.0f, 0.0f);
 
     glPushMatrix();
@@ -468,7 +474,8 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
     glPopMatrix();
 
     // MIỆNG
-    glBindTexture(GL_TEXTURE_2D, texture_pink);
+    glDisable(GL_TEXTURE_2D);
+    glColor3f(0.4f, 0.1f, 0.1f);
 
     glBegin(GL_LINE_STRIP);
 
@@ -483,7 +490,9 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
     glEnd();
 
     // MÁ HỒNG
-    glBindTexture(GL_TEXTURE_2D, texture_hong_pastel);
+    glDisable(GL_TEXTURE_2D);
+
+    glColor3f(1.0f, 0.7f, 0.8f);
 
     glPushMatrix();
     glTranslatef(-0.22f, 0.38f, 0.36f);
@@ -495,9 +504,11 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
     glutSolidSphere(0.05f, 20, 20);
     glPopMatrix();
 
-    glPopMatrix();
-
+    // KẾT THÚC VẼ LABUBU, BẬT LẠI TEXTURE CHO CÁC PHẦN KHÁC
     glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPopMatrix();
+    gluDeleteQuadric(quad);
 }
 
 void setupLighting()
