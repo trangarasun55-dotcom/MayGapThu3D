@@ -384,7 +384,7 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
     // ĐẦU GẮP
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_bac);
+    glBindTexture(GL_TEXTURE_2D, texture_kim);
 
     glutSolidSphere(0.18f, 20, 20);
 
@@ -394,7 +394,7 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
 
     for (int i = 0; i < 3; i++)
     {
-        glBindTexture(GL_TEXTURE_2D, texture_bac);
+        glBindTexture(GL_TEXTURE_2D, texture_kim);
 
         glPushMatrix();
 
