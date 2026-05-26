@@ -1,343 +1,624 @@
 #include <glut.h>
 #include <math.h>
-#include "render.h"
 
-//=====================================================
-// VẼ KHỐI HỘP
-//=====================================================
+#include "render.h"
+#include "globals.h"
+#include "imageloader.h"
+
+GLuint texture_bac;
+GLuint texture_hong;
+GLuint texture_kem;
+GLuint texture_xanhmint;
+
+void drawCube(float x, float y, float z);
+
+GLuint loadTexture(const char* filename)
+{
+    int width, height;
+
+    unsigned char* pixels =
+        loadBMP(filename, width, height);
+
+    if (pixels == nullptr)
+        return 0;
+
+    GLuint textureID;
+
+    glGenTextures(1, &textureID);
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGB,
+        width,
+        height,
+        0,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        pixels);
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR);
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MAG_FILTER,
+        GL_LINEAR);
+
+    delete[] pixels;
+
+    return textureID;
+}
+
+void drawTexturedCube(float size)
+{
+    float s = size / 2.0f;
+
+    glBegin(GL_QUADS);
+
+    // FRONT
+    glNormal3f(0, 0, 1);
+    glTexCoord2f(0, 0); glVertex3f(-s, -s, s);
+    glTexCoord2f(1, 0); glVertex3f(s, -s, s);
+    glTexCoord2f(1, 1); glVertex3f(s, s, s);
+    glTexCoord2f(0, 1); glVertex3f(-s, s, s);
+
+    // BACK
+    glNormal3f(0, 0, -1);
+    glTexCoord2f(0, 0); glVertex3f(s, -s, -s);
+    glTexCoord2f(1, 0); glVertex3f(-s, -s, -s);
+    glTexCoord2f(1, 1); glVertex3f(-s, s, -s);
+    glTexCoord2f(0, 1); glVertex3f(s, s, -s);
+
+    // LEFT
+    glNormal3f(-1, 0, 0);
+    glTexCoord2f(0, 0); glVertex3f(-s, -s, -s);
+    glTexCoord2f(1, 0); glVertex3f(-s, -s, s);
+    glTexCoord2f(1, 1); glVertex3f(-s, s, s);
+    glTexCoord2f(0, 1); glVertex3f(-s, s, -s);
+
+    // RIGHT
+    glNormal3f(1, 0, 0);
+    glTexCoord2f(0, 0); glVertex3f(s, -s, s);
+    glTexCoord2f(1, 0); glVertex3f(s, -s, -s);
+    glTexCoord2f(1, 1); glVertex3f(s, s, -s);
+    glTexCoord2f(0, 1); glVertex3f(s, s, s);
+
+    // TOP
+    glNormal3f(0, 1, 0);
+    glTexCoord2f(0, 0); glVertex3f(-s, s, s);
+    glTexCoord2f(1, 0); glVertex3f(s, s, s);
+    glTexCoord2f(1, 1); glVertex3f(s, s, -s);
+    glTexCoord2f(0, 1); glVertex3f(-s, s, -s);
+
+    // BOTTOM
+    glNormal3f(0, -1, 0);
+    glTexCoord2f(0, 0); glVertex3f(-s, -s, -s);
+    glTexCoord2f(1, 0); glVertex3f(s, -s, -s);
+    glTexCoord2f(1, 1); glVertex3f(s, -s, s);
+    glTexCoord2f(0, 1); glVertex3f(-s, -s, s);
+
+    glEnd();
+}
+
 void drawCube(float x, float y, float z)
 {
     glPushMatrix();
+
     glScalef(x, y, z);
-    glutSolidCube(1.0);
+
+    glutSolidCube(1.0f);
+
     glPopMatrix();
 }
 
-//=====================================================
-// THÂN MÁY GẮP THÚ (Đã thêm chi tiết Pop Mart)
-//=====================================================
 void drawMachineBody()
 {
-    //=====================
+    // =========================
     // THÂN DƯỚI
-    //=====================
-    glColor3f(1.0f, 0.75f, 0.82f);
+    // =========================
+
+    glBindTexture(GL_TEXTURE_2D, texture_hong);
+
     glPushMatrix();
+
     glTranslatef(0.0f, -2.0f, 0.0f);
-    drawCube(3.5f, 2.8f, 3.5f);
+
+    glScalef(3.5f, 2.8f, 3.5f);
+
+    drawTexturedCube(1.0f);
+
     glPopMatrix();
 
-    //=================================================
-    // [THÊM MỚI] CỬA NHẬN QUÀ Ở MẶT TRƯỚC THÂN DƯỚI
-    //=================================================
-    // Khung viền cửa màu xanh mint nhạt
+    // =========================
+    // CỬA NHẬN QUÀ
+    // =========================
+
     glColor3f(0.75f, 0.9f, 0.85f);
+
     glPushMatrix();
-    glTranslatef(0.0f, -2.2f, 1.76f); // Nhô ra một chút so với mặt thân (1.75f) để tránh trùng mặt
+
+    glTranslatef(0.0f, -2.2f, 1.76f);
+
     drawCube(1.2f, 1.2f, 0.06f);
+
     glPopMatrix();
 
-    // Lòng cửa sập màu hồng nhạt
+
     glColor3f(1.0f, 0.85f, 0.88f);
+
     glPushMatrix();
+
     glTranslatef(0.0f, -2.2f, 1.79f);
+
     drawCube(0.9f, 0.9f, 0.04f);
+
     glPopMatrix();
 
-    // Núm tay cầm nhỏ trên cửa quà
+
     glColor3f(0.75f, 0.9f, 0.85f);
+
     glPushMatrix();
+
     glTranslatef(0.0f, -1.85f, 1.82f);
+
     glutSolidSphere(0.06f, 15, 15);
+
     glPopMatrix();
 
-
-    //=====================
+    // =========================
     // MÁI
-    //=====================
-    glColor3f(1.0f, 0.85f, 0.9f);
+    // =========================
+
+    glBindTexture(GL_TEXTURE_2D, texture_kem);
+
     glPushMatrix();
+
     glTranslatef(0.0f, 3.9f, 0.0f);
-    drawCube(3.55f, 0.8f, 3.55f);
+
+    glScalef(3.55f, 0.8f, 3.55f);
+
+    drawTexturedCube(1.0f);
+
     glPopMatrix();
 
-    //=================================================
-    // [THÊM MỚI] 4 CỘT TRỤ GÓC LỒNG KÍNH (MÀU XANH MINT)
-    //=================================================
-    glColor3f(0.75f, 0.9f, 0.85f);
-    float pOffset = 1.7f; // Tọa độ đặt cột sát các góc kính
-    float pSize = 0.16f;  // Độ dày của cột trụ
+    // =========================
+    // 4 CỘT GÓC
+    // =========================
 
-    // Cột Trước - Trái
-    glPushMatrix(); 
-    glTranslatef(-pOffset, 1.4f, pOffset); 
-    drawCube(pSize, 4.3f, pSize); 
-    glPopMatrix();
-    
-    // Cột Trước - Phải
-    glPushMatrix(); 
-    glTranslatef(pOffset, 1.4f, pOffset); 
-    drawCube(pSize, 4.3f, pSize); 
-    glPopMatrix();
-    
-    // Cột Sau - Trái
-    glPushMatrix(); 
-    glTranslatef(-pOffset, 1.4f, -pOffset); 
-    drawCube(pSize, 4.3f, pSize); 
-    glPopMatrix();
-    
-    // Cột Sau - Phải
-    glPushMatrix(); 
-    glTranslatef(pOffset, 1.4f, -pOffset); 
-    drawCube(pSize, 4.3f, pSize); 
-    glPopMatrix();
+    glBindTexture(GL_TEXTURE_2D, texture_xanhmint);
 
-    //=================================================
-    // [THÊM MỚI] TRỤC BỘ DI CHUYỂN CẦN GẮP (TRÊN TRẦN MÁY)
-    //=================================================
-    glColor3f(0.75f, 0.9f, 0.85f);
+    float pillarOffset = 1.7f;
+    float pillarSize = 0.16f;
+
+    // CỘT 1
     glPushMatrix();
-    glTranslatef(0.0f, 3.42f, 0.0f); // Nằm ngay dưới mái, ôm lấy đầu dây treo
-    drawCube(0.7f, 0.25f, 0.7f);
+    glTranslatef(-pillarOffset, 1.4f, pillarOffset);
+    glScalef(pillarSize, 4.3f, pillarSize);
+    drawTexturedCube(1.0f);
     glPopMatrix();
 
-
-    //=====================// BỆ ĐIỀU KHIỂN
-    //=====================
-    glColor3f(1.0f, 0.85f, 0.85f);
+    // CỘT 2
     glPushMatrix();
+    glTranslatef(pillarOffset, 1.4f, pillarOffset);
+    glScalef(pillarSize, 4.3f, pillarSize);
+    drawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // CỘT 3
+    glPushMatrix();
+    glTranslatef(-pillarOffset, 1.4f, -pillarOffset);
+    glScalef(pillarSize, 4.3f, pillarSize);
+    drawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // CỘT 4
+    glPushMatrix();
+    glTranslatef(pillarOffset, 1.4f, -pillarOffset);
+    glScalef(pillarSize, 4.3f, pillarSize);
+    drawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // =========================
+    // KHỐI DI CHUYỂN TRÊN TRẦN
+    // =========================
+
+    glBindTexture(GL_TEXTURE_2D, texture_xanhmint);
+
+    glPushMatrix();
+
+    glTranslatef(
+        clawPosition.x,
+        3.7f,
+        clawPosition.z);
+
+    glScalef(0.7f, 0.25f, 0.7f);
+
+    drawTexturedCube(1.0f);
+
+    glPopMatrix();
+
+    // =========================
+    // BỆ ĐIỀU KHIỂN
+    // =========================
+
+    glBindTexture(GL_TEXTURE_2D, texture_hong);
+
+    glPushMatrix();
+
     glTranslatef(0.0f, -0.5f, 1.9f);
-    drawCube(1.5f, 0.5f, 0.8f);
+
+    glScalef(1.5f, 0.5f, 0.8f);
+
+    drawTexturedCube(1.0f);
+
     glPopMatrix();
 
-    //=====================
+    // =========================
     // JOYSTICK
-    //=====================
+    // =========================
+
     glColor3f(0.7f, 1.0f, 0.8f);
+
     glPushMatrix();
+
     glTranslatef(-0.3f, -0.2f, 2.2f);
+
     glutSolidSphere(0.12f, 20, 20);
+
     glPopMatrix();
+
+    GLUquadric* quad = gluNewQuadric();
 
     glColor3f(0.8f, 0.8f, 0.8f);
-    GLUquadric* q = gluNewQuadric();
+
     glPushMatrix();
+
     glTranslatef(-0.3f, -0.45f, 2.2f);
+
     glRotatef(-90, 1, 0, 0);
-    gluCylinder(q, 0.03, 0.03, 0.3, 20, 20);
+
+    gluCylinder(quad, 0.03f, 0.03f, 0.3f, 20, 20);
+
     glPopMatrix();
 
-    //=================================================
-    // [THÊM MỚI] NÚT BẤM LỚN (ACTION BUTTON) BÊN PHẢI JOYSTICK
-    //=================================================
+    // =========================
+    // NÚT BẤM
+    // =========================
+
     glColor3f(0.7f, 1.0f, 0.8f);
+
     glPushMatrix();
-    glTranslatef(0.3f, -0.22f, 2.1f); // Đặt đối xứng với cần gạt qua tâm bệ
-    glScalef(1.0f, 0.35f, 1.0f);      // Làm dẹt khối cầu thành hình nút bấm tap
+
+    glTranslatef(0.3f, -0.22f, 2.1f);
+
+    glScalef(1.0f, 0.35f, 1.0f);
+
     glutSolidSphere(0.15f, 20, 20);
+
     glPopMatrix();
 
-    gluDeleteQuadric(q);
+    gluDeleteQuadric(quad);
 }
 
-//=====================================================
-// KHUNG KÍNH TRONG SUỐT
-//=====================================================
 void drawMachineGlass()
 {
+    glDisable(GL_TEXTURE_2D);
+
     glEnable(GL_BLEND);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glDepthMask(GL_FALSE);
 
     glColor4f(0.8f, 1.0f, 1.0f, 0.12f);
+
     glPushMatrix();
+
     glTranslatef(0.0f, 1.4f, 0.0f);
+
     drawCube(3.5f, 4.3f, 3.5f);
+
     glPopMatrix();
 
     glDepthMask(GL_TRUE);
+
     glDisable(GL_BLEND);
+
+    glEnable(GL_TEXTURE_2D);
 }
 
-//=====================================================
-// CẦN GẮP
-//=====================================================
 void drawClaw()
 {
-    GLUquadric* q = gluNewQuadric();
+    GLUquadric* quad = gluNewQuadric();
 
-    //=====================
+    glPushMatrix();
+
+    glTranslatef(
+        clawPosition.x,
+        clawPosition.y,
+        clawPosition.z);
+
+    // =========================
     // DÂY TREO
-    //=====================
+    // =========================
+
     glColor3f(0.85f, 0.85f, 0.85f);
+
     glPushMatrix();
-    glTranslatef(0.0f, 3.55f, 0.0f);
+
+    glTranslatef(
+        0.0f,
+        3.4f - clawPosition.y,
+        0.0f);
+
     glRotatef(90, 1, 0, 0);
-    gluCylinder(q, 0.025, 0.025, 2.4, 20, 20);
+
+    gluCylinder(
+        quad,
+        0.02f,
+        0.02f,
+        3.4f - clawPosition.y,
+        20,
+        20);
+
     glPopMatrix();
 
-    //=====================
+    // =========================
     // ĐẦU GẮP
-    //=====================
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glPushMatrix();
-    glTranslatef(0.0f, 1.15f, 0.0f);
-    glutSolidSphere(0.18f, 20, 20);
-    glPopMatrix();
+    // =========================
 
-    //=====================
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    glutSolidSphere(0.18f, 20, 20);
+
+    // =========================
     // 3 CÀNG GẮP
-    //=====================
+    // =========================
+
     for (int i = 0; i < 3; i++)
     {
         glPushMatrix();
-        glTranslatef(0.0f, 1.15f, 0.0f);
-        glRotatef(i * 120, 0, 1, 0);
-        glRotatef(-35, 1, 0, 0);
+
+        glRotatef(i * 120.0f, 0, 1, 0);
+
+        glRotatef(-clawOpenAngle, 1, 0, 0);
+
         glTranslatef(0.0f, -0.35f, 0.15f);
 
         glScalef(0.06f, 0.55f, 0.06f);
-        glutSolidSphere(1.0, 20, 20);
+
+        glutSolidSphere(1.0f, 20, 20);
+
         glPopMatrix();
     }
 
-    gluDeleteQuadric(q);
+    glPopMatrix();
+
+    gluDeleteQuadric(quad);
 }
 
-//=====================================================
-// GẤU BÔNG
-//=====================================================
-void drawLabubu(
-    float x, float y, float z,
-    float r, float g, float b,
-    float rotY = 0.0f)
+void drawLabubu(float x, float y, float z, float r, float g, float b, float rotateY)
 {
-    glPushMatrix();
-    glTranslatef(x, y, z);
-    glRotatef(rotY, 0, 1, 0);
+    glDisable(GL_TEXTURE_2D);
 
-    // BODY
+    glPushMatrix();
+
+    glTranslatef(x, y, z);
+
+    glRotatef(rotateY, 0, 1, 0);
+
+    // THÂN
     glColor3f(r, g, b);
+
     glPushMatrix();
     glScalef(0.7f, 0.65f, 0.7f);
-    glutSolidSphere(0.5, 40, 40);
+    glutSolidSphere(0.5f, 40, 40);
     glPopMatrix();
 
-    // HEAD
+    // ĐẦU
     glPushMatrix();
     glTranslatef(0.0f, 0.45f, 0.0f);
-    glutSolidSphere(0.45, 40, 40);
+    glutSolidSphere(0.45f, 40, 40);
     glPopMatrix();
 
-    // LEFT EAR
+    // TAI TRÁI
     glPushMatrix();
     glTranslatef(-0.23f, 0.8f, 0.0f);
-    glutSolidSphere(0.18, 30, 30);
+    glutSolidSphere(0.18f, 30, 30);
     glPopMatrix();
 
-    // RIGHT EAR
+    // TAI PHẢI
     glPushMatrix();
     glTranslatef(0.23f, 0.8f, 0.0f);
-    glutSolidSphere(0.18, 30, 30);
+    glutSolidSphere(0.18f, 30, 30);
     glPopMatrix();
 
-    // EYES
+    // MẮT
     glColor3f(0.2f, 0.1f, 0.1f);
+
     glPushMatrix();
     glTranslatef(-0.12f, 0.48f, 0.38f);
-    glutSolidSphere(0.04, 20, 20);
+    glutSolidSphere(0.04f, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(0.12f, 0.48f, 0.38f);
-    glutSolidSphere(0.04, 20, 20);
+    glutSolidSphere(0.04f, 20, 20);
     glPopMatrix();
 
-    // MOUTH
+    // MIỆNG
     glColor3f(0.5f, 0.2f, 0.2f);
+
     glBegin(GL_LINE_STRIP);
+
     for (float i = -0.5f; i <= 0.5f; i += 0.05f)
     {
-        glVertex3f(i * 0.12f, 0.35f - (i * i * 0.05f), 0.4f);
+        glVertex3f(
+            i * 0.12f,
+            0.35f - (i * i * 0.05f),
+            0.4f);
     }
+
     glEnd();
 
-    // BLUSH
+    // MÁ HỒNG
     glColor3f(1.0f, 0.6f, 0.7f);
+
     glPushMatrix();
     glTranslatef(-0.22f, 0.38f, 0.36f);
-    glutSolidSphere(0.05, 20, 20);
+    glutSolidSphere(0.05f, 20, 20);
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(0.22f, 0.38f, 0.36f);
-    glutSolidSphere(0.05, 20, 20);
+    glutSolidSphere(0.05f, 20, 20);
     glPopMatrix();
 
     glPopMatrix();
+
+    glEnable(GL_TEXTURE_2D);
 }
 
-//=====================================================
-// ÁNH SÁNG
-//=====================================================
 void setupLighting()
 {
     glEnable(GL_LIGHTING);
+
     glEnable(GL_LIGHT0);
+
     glEnable(GL_COLOR_MATERIAL);
 
-    GLfloat lightPos[] = { 5, 8, 5, 1 };
-    GLfloat ambient[] = { 0.4f, 0.4f, 0.4f, 1.0f };
-    GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat lightPosition[] =
+    {
+        5.0f,
+        8.0f,
+        5.0f,
+        1.0f
+    };
 
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+    GLfloat ambientLight[] =
+    {
+        0.4f,
+        0.4f,
+        0.4f,
+        1.0f
+    };
+
+    GLfloat diffuseLight[] =
+    {
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f
+    };
+
+    glLightfv(
+        GL_LIGHT0,
+        GL_POSITION,
+        lightPosition);
+
+    glLightfv(
+        GL_LIGHT0,
+        GL_AMBIENT,
+        ambientLight);
+
+    glLightfv(
+        GL_LIGHT0,
+        GL_DIFFUSE,
+        diffuseLight);
 }
 
-//=====================================================
-// DISPLAY
-//=====================================================
 void renderScene()
 {
-    /*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
-    gluLookAt(
-        7, 6, 12,
-        0, 1, 0,
-        0, 1, 0
-    ); */
-
-    // 1. Vẽ thân máy + các chi tiết khung, nút, cửa sập mới
     drawMachineBody();
 
-    // 2. Cần gắp
     drawClaw();
 
-    // 3. Gấu bông
-    drawLabubu(-0.8f, -0.3f, 0.8f, 1.0f, 0.9f, 0.4f, 35.0f);
-    drawLabubu(0.8f, -0.3f, -0.3f, 1.0f, 0.7f, 0.8f, -25.0f);
-    drawLabubu(0.0f, -0.3f, 0.0f, 0.7f, 1.0f, 0.8f, 0.0f);
-    drawLabubu(-0.2f, -0.3f, -0.8f, 0.7f, 0.85f, 1.0f, 15.0f);
+    float colors[5][3] =
+    {
+        {1.0f, 0.9f, 0.4f},
+        {1.0f, 0.7f, 0.8f},
+        {0.7f, 1.0f, 0.8f},
+        {0.7f, 0.85f, 1.0f},
+        {0.9f, 0.6f, 0.9f}
+    };
 
-    // 4. Khung kính trong suốt đè lên trên cùng
+    for (int i = 0; i < TOY_COUNT; i++)
+    {
+        if (!listToys[i].isActive)
+            continue;
+
+        float rotateAngle =
+            static_cast<float>(i * 25);
+
+        drawLabubu(
+            listToys[i].position.x,
+            listToys[i].position.y,
+            listToys[i].position.z,
+
+            colors[i % 5][0],
+            colors[i % 5][1],
+            colors[i % 5][2],
+
+            rotateAngle);
+    }
+
     drawMachineGlass();
-
-    //glutSwapBuffers();
 }
 
-//=====================================================
-// INIT
-//=====================================================
 void initGraphics()
 {
-    //glClearColor(0.97f, 0.92f, 0.92f, 1.0f);  glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_TEXTURE_2D);
+
+    glShadeModel(GL_SMOOTH);
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glHint(
+        GL_LINE_SMOOTH_HINT,
+        GL_NICEST);
+
+    glTexEnvf(
+        GL_TEXTURE_ENV,
+        GL_TEXTURE_ENV_MODE,
+        GL_MODULATE
+    );
+
+    texture_bac =
+        loadTexture("data/bac.bmp");
+
+    texture_hong =
+        loadTexture("data/hong_pastel.bmp");
+
+    texture_kem =
+        loadTexture("data/kem.bmp");
+
+    texture_xanhmint =
+        loadTexture("data/xanh_mint.bmp");
+
+    glClearColor(
+        0.95f,
+        0.92f,
+        0.95f,
+        1.0f);
 
     setupLighting();
 
     glMatrixMode(GL_PROJECTION);
+
     glLoadIdentity();
-    gluPerspective(45, 1.33, 1, 100);
+
+    gluPerspective(
+        45.0,
+        800.0 / 600.0,
+        1.0,
+        100.0);
+
     glMatrixMode(GL_MODELVIEW);
 }

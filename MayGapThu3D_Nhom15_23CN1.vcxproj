@@ -153,10 +153,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="imageloader.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="physics.h" />
     <ClInclude Include="render.h" />
+    <ClInclude Include="virtualreality.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

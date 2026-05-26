@@ -1,63 +1,91 @@
 #include <glut.h>
+
+#include "globals.h"
 #include "physics.h"
-#include "camera.h"
 #include "input.h"
+#include "camera.h"
 #include "render.h"
 
+// Khởi tạo thông số camera ban đầu
+float cameraAngleX = 0.0f;
+float cameraAngleY = 30.0f;
+float cameraDistance = 15.0f;
+
+// Cấu hình giới hạn lồng kính
+const float MIN_X = -4.0f;
+const float MAX_X = 4.0f;
+const float MIN_Z = -4.0f;
+const float MAX_Z = 4.0f;
+
+// Vị trí lỗ rơi gấu
+const float DROP_HOLE_X = -3.5f;
+const float DROP_HOLE_Z = -3.5f;
+
 const int TOY_COUNT = 5;
+
 Toy listToys[TOY_COUNT];
 
-// --- HÀM KHỞI TẠO ---
-void init() {
-    // Thiết lập ánh sáng, màu nền của Huyền ở đây...
-    glClearColor(0.8f, 0.9f, 1.0f, 1.0f);
+hmtoan::Vec3 clawPosition = { 0, 3.2f, 0 };
 
-    // ĐƯA VÀO ĐÂY: Khởi tạo vị trí gấu và cần gắp khi vừa mở game
-    initPhysics(listToys, TOY_COUNT);
-    
-    // [Trang] Liên kết mảng dữ liệu đồ chơi sang hệ thống input bàn phím để phục vụ phím R
-    InitInputSystem(listToys, TOY_COUNT);
+float clawOpenAngle = 45.0f;
 
-    glEnable(GL_DEPTH_TEST); // Bật kiểm thử chiều sâu để hiển thị đúng không gian 3D
+int grabbedToyIndex = -1;
+
+ClawState currentClawState = STATE_IDLE;
+
+CameraMode currentCameraMode = CAMERA_PANORAMA;
+
+void init()
+{
+    glEnable(GL_DEPTH_TEST);
+
+    initGraphics();
+
+    initPhysics();
 }
 
-// --- HÀM UPDATE LOGIC KHUNG HÌNH ---
-void idle() {
-    // ĐƯA VÀO ĐÂY: Cập nhật tọa độ va chạm liên tục
-    updatePhysics(0.016f, listToys, TOY_COUNT);
-
-    glutPostRedisplay(); // Yêu cầu vẽ lại màn hình sau khi cập nhật vật lý
-}
-
-// --- HÀM VẼ CHÍNH ---
-void display() {
+void display()
+{
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Gọi hàm cấu hình Camera của Trang (Truyền vị trí thực tế của cần gắp từ physics sang)
-    SetupCamera(clawPosition);
+    SetupCamera();
 
-    // Gọi các hàm vẽ khung máy, vẽ gấu từ render.cpp 
-	renderScene();
+    renderScene();
 
     glutSwapBuffers();
 }
 
-// --- HÀM MAIN CỦA CHƯƠNG TRÌNH ---
-int main(int argc, char** argv) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(800, 600);
-    glutCreateWindow("May Gap Thu 3D - Nhom 15");
+void idle()
+{
+    updatePhysics(0.016f);
 
-    init(); // Gọi hàm khởi tạo phía trên
+    glutPostRedisplay();
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+
+    glutInitDisplayMode(
+        GLUT_DOUBLE |
+        GLUT_RGB |
+        GLUT_DEPTH);
+
+    glutInitWindowSize(1000, 700);
+
+    glutCreateWindow("May Gap Thu 3D");
+
+    init();
 
     glutDisplayFunc(display);
-    glutIdleFunc(idle); // Đăng ký hàm idle để chạy logic vật lý liên tục
 
-    // [Trang] Đăng ký sự kiện bàn phím cho hệ thống tương tác
-    glutKeyboardFunc(KeyboardHandler);   // Xử lý phím thường (Space, C, R)
-    glutSpecialFunc(SpecialKeyHandler);  // Xử lý phím đặc biệt (Các phím mũi tên)
+    glutIdleFunc(idle);
+
+    glutKeyboardFunc(keyboard);
+
+    glutSpecialFunc(specialKeyboard);
 
     glutMainLoop();
+
     return 0;
 }

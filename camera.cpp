@@ -1,11 +1,36 @@
 #include "camera.h"
-#if defined(__APPLE__) || defined(MACOSX)
-#include <GLUT/glut.h>
-#else
-#include "../glut/glut.h"   
-#endif
+#include <math.h>
+#include <glut.h>
 
-CameraMode currentCameraMode = CAMERA_PANORAMA;
+void SetupCamera() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0, 800.0 / 600.0, 0.1, 100.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    if (currentCameraMode == CAMERA_PANORAMA) {
+        // Tính toán vị trí Camera dựa trên góc xoay cameraAngleX và cameraAngleY
+        float radX = cameraAngleX * 3.14159265f / 180.0f;
+        float radY = cameraAngleY * 3.14159265f / 180.0f;
+
+        float eyeX = cameraDistance * cos(radY) * sin(radX);
+        float eyeY = cameraDistance * sin(radY);
+        float eyeZ = cameraDistance * cos(radY) * cos(radX);
+
+        // Nhìn thẳng vào tâm máy gắp thú (tọa độ 0, 3, 0)
+        gluLookAt(eyeX, eyeY + 3.0f, eyeZ,
+            0.0f, 3.0f, 0.0f,
+            0.0f, 1.0f, 0.0f);
+    }
+    else {
+        // Góc nhìn cận cảnh di chuyển bám sát theo vị trí càng gắp
+        gluLookAt(clawPosition.x, clawPosition.y + 3.0f, clawPosition.z + 5.0f,
+            clawPosition.x, clawPosition.y, clawPosition.z,
+            0.0f, 1.0f, 0.0f);
+    }
+}
 
 void ToggleCamera() {
     if (currentCameraMode == CAMERA_PANORAMA) {
@@ -15,22 +40,4 @@ void ToggleCamera() {
         currentCameraMode = CAMERA_PANORAMA;
     }
 }
-
-void SetupCamera(const Vector3D& clawPos) {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    if (currentCameraMode == CAMERA_PANORAMA) {
-        // Góc nhìn toàn cảnh: Đặt camera ở ngoài bao quát toàn bộ khung kính
-        gluLookAt(0.0f, 12.0f, 16.0f,  // Vị trí mắt người xem (Cao và lùi về sau)
-            0.0f, 4.0f, 0.0f,    // Điểm nhìn tập trung vào tâm máy gắp
-            0.0f, 1.0f, 0.0f);   // Vector hướng lên trời
-    }
-    else if (currentCameraMode == CAMERA_CLOSEUP) {
-        // Góc nhìn cận cảnh: Camera đặt hơi check phía trên cần gắp một chút và nhìn thẳng vào cần gắp
-        // Vị trí camera tịnh tiến liên tục dựa trên tọa độ thực clawPos của cần gắp
-        gluLookAt(clawPos.x, clawPos.y + 2.5f, clawPos.z + 3.5f,  // Vị trí mắt di chuyển theo cần
-            clawPos.x, clawPos.y, clawPos.z,                // Nhìn thẳng vào tâm hộp va chạm cần gắp
-            0.0f, 1.0f, 0.0f);                              // Vector hướng lên trời
-    }
-}
+// ----------------------------------------------
