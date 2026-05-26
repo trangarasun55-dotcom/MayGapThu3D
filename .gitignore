@@ -1,0 +1,19 @@
+# Visual Studio
+.vs/
+Debug/
+Release/
+x64/
+ipch/
+
+# Build files
+*.obj
+*.exe
+*.pdb
+*.ilk
+
+# User files
+*.user
+*.VC.db
+
+# Temporary
+*.log

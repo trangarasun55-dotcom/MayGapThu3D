@@ -1,0 +1,105 @@
+#include "input.h"
+#include "physics.h"
+#include "camera.h"
+#include <glut.h>
+
+void keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+    case ' ': // Bấm Space để bắt đầu gắp
+        if (currentClawState == STATE_IDLE) {
+            currentClawState = STATE_LOWERING;
+        }
+        break;
+    case 'c': case 'C':
+        ToggleCamera(); // Phím tắt bạn đã có sẵn
+        break;
+    case 'r': case 'R':
+        resetPhysics(); // Reset lại vị trí gấu
+        break;
+
+    case '1': //chính diện
+        cameraAngleX = 0.0f;
+        cameraAngleY = 15.0f;
+        cameraDistance = 18.0f;
+        break;
+
+    case '2': //phải
+        cameraAngleX = 90.0f;
+        cameraAngleY = 15.0f;
+        cameraDistance = 18.0f;
+        break;
+
+	case '3': //phía sau
+        cameraAngleX = 180.0f;
+        cameraAngleY = 15.0f;
+        cameraDistance = 18.0f;
+        break;
+
+	case '4': //trái
+        cameraAngleX = -90.0f;
+        cameraAngleY = 15.0f;
+        cameraDistance = 18.0f;
+        break;
+
+	case '5': //trên cao
+        cameraAngleX = 45.0f;
+        cameraAngleY = 70.0f;
+        cameraDistance = 18.0f;
+        break;
+    }
+    glutPostRedisplay();
+}
+
+void specialKeyboard(int key, int x, int y) {
+    float moveSpeed = 0.5f;
+    // Chỉ cho phép di chuyển càng gắp khi đang ở trạng thái nghỉ
+    if (currentClawState == STATE_IDLE) {
+        switch (key) {
+        case GLUT_KEY_UP: moveClawManual(0.0f, -moveSpeed); break;
+        case GLUT_KEY_DOWN: moveClawManual(0.0f, moveSpeed); break;
+        case GLUT_KEY_LEFT: moveClawManual(-moveSpeed, 0.0f); break;
+        case GLUT_KEY_RIGHT: moveClawManual(moveSpeed, 0.0f); break;
+        }
+    }
+    glutPostRedisplay();
+}
+
+void mouseButton(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON)
+    {
+        if (state == GLUT_DOWN)
+        {
+            isDragging = true;
+            lastMouseX = x;
+            lastMouseY = y;
+        }
+        else
+        {
+            isDragging = false;
+        }
+    }
+}
+
+void mouseMotion(int x, int y)
+{
+    if (isDragging)
+    {
+        int dx = x - lastMouseX;
+        int dy = y - lastMouseY;
+
+        cameraAngleX += dx * 0.5f;
+        cameraAngleY += dy * 0.5f;
+
+        if (cameraAngleY > 89.0f)
+            cameraAngleY = 89.0f;
+
+        if (cameraAngleY < 5.0f)
+            cameraAngleY = 5.0f;
+
+        lastMouseX = x;
+        lastMouseY = y;
+
+        glutPostRedisplay();
+    }
+}
