@@ -32,7 +32,7 @@ enum ClawState {
     STATE_DROPPING     // Mở càng, thả gấu bông rơi xuống lỗ
 };
 
-// --- CÁC BIẾN TOÀN CỤC (Cần chia sẻ với render.cpp và input.cpp) ---
+// --- CÁC BIẾN TOÀN CỤC (Chia sẻ với render.cpp và input.cpp) ---
 extern ClawState currentClawState;
 extern Vector3D clawPosition;
 extern AABB clawBBox;

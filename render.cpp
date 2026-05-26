@@ -1,5 +1,6 @@
 #include <glut.h>
 #include <math.h>
+#include "render.h"
 
 //=====================================================
 // VẼ KHỐI HỘP
@@ -297,16 +298,16 @@ void setupLighting()
 //=====================================================
 // DISPLAY
 //=====================================================
-void display()
+void renderScene()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
     gluLookAt(
         7, 6, 12,
         0, 1, 0,
         0, 1, 0
-    );
+    ); */
 
     // 1. Vẽ thân máy + các chi tiết khung, nút, cửa sập mới
     drawMachineBody();
@@ -323,16 +324,15 @@ void display()
     // 4. Khung kính trong suốt đè lên trên cùng
     drawMachineGlass();
 
-    glutSwapBuffers();
+    //glutSwapBuffers();
 }
 
 //=====================================================
 // INIT
 //=====================================================
-void init()
+void initGraphics()
 {
-    glClearColor(0.97f, 0.92f, 0.92f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
+    //glClearColor(0.97f, 0.92f, 0.92f, 1.0f);  glEnable(GL_DEPTH_TEST);
 
     setupLighting();
 

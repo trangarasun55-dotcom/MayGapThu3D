@@ -2,6 +2,7 @@
 #include "physics.h"
 #include "camera.h"
 #include "input.h"
+#include "render.h"
 
 const int TOY_COUNT = 5;
 Toy listToys[TOY_COUNT];
