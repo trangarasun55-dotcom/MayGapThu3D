@@ -29,7 +29,7 @@ void initPhysics()
         // Khởi tạo vị trí ngẫu nhiên cho gấu trong lồng
         listToys[i].position.x = -1.2f + static_cast<float>(rand()) / (RAND_MAX / 2.4f);
 
-        listToys[i].position.y = -0.9f;
+		listToys[i].position.y = -0.3f; // Đặt gấu nằm sát đáy lồng, có thể điều chỉnh nếu muốn gấu nằm cao hơn một chút
 
         listToys[i].position.z = -1.2f + static_cast<float>(rand()) / (RAND_MAX / 2.4f);
     }
@@ -66,15 +66,15 @@ void startGrabCycle()
 
 void updatePhysics(float deltaTime)
 {
-    float moveSpeedY = 10.0f * deltaTime;
-    float moveSpeedXZ = 5.0f * deltaTime;
-    float rotateSpeed = 60.0f * deltaTime;
+    float moveSpeedY = 1.2f * deltaTime;
+    float moveSpeedXZ = 0.8f * deltaTime;
+    float rotateSpeed = 10.0f * deltaTime;
 
     switch (currentClawState) {
     case STATE_LOWERING:
         clawPosition.y -= moveSpeedY;
         if (clawPosition.y <= 2.0f) { // Chạm đáy lồng
-            clawPosition.y = 2.0f;
+			clawPosition.y = 1.0f; // Đặt thấp hơn một chút để đảm bảo kẹp chạm vào gấu
             currentClawState = STATE_CLAMPING;
         }
         break;
@@ -84,11 +84,31 @@ void updatePhysics(float deltaTime)
         if (clawOpenAngle <= 0.0f) {
             clawOpenAngle = 0.0f;
 
-            // Tạm thời tự động gắp thử con gấu đầu tiên nếu gần (AABB check viết tại đây)
-            // Bạn có thể bổ sung logic khoảng cách thật ở đây, hiện tại mình giả lập gắp trúng con 0
-            if (grabbedToyIndex == -1 && listToys[0].isActive) {
-                grabbedToyIndex = 0;
-                listToys[0].isGrabbed = true;
+            // --- LOGIC KIỂM TRA KHOẢNG CÁCH THỰC TẾ ---
+            if (grabbedToyIndex == -1) {
+                float minDistance = 0.6f; // Bán kính vùng gắp (gấu nằm trong khoảng này mới gắp được)
+                int targetIndex = -1;
+
+                for (int i = 0; i < TOY_COUNT; i++) {
+                    if (listToys[i].isActive) {
+                        // Tính khoảng cách Euclidean giữa càng gắp và gấu trên mặt phẳng ngang XZ
+                        float dx = clawPosition.x - listToys[i].position.x;
+                        float dz = clawPosition.z - listToys[i].position.z;
+                        float distXZ = sqrt(dx * dx + dz * dz);
+
+                        // Tìm con gấu nằm gần tâm càng gắp nhất
+                        if (distXZ < minDistance) {
+                            minDistance = distXZ;
+                            targetIndex = i;
+                        }
+                    }
+                }
+
+                // Nếu tìm thấy con gấu đủ gần, thực hiện gắp nó lên
+                if (targetIndex != -1) {
+                    grabbedToyIndex = targetIndex;
+                    listToys[targetIndex].isGrabbed = true;
+                }
             }
 
             currentClawState = STATE_LIFTING;
