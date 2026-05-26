@@ -19,46 +19,34 @@ void keyboard(unsigned char key, int x, int y) {
 
     case '1': //chính diện
         cameraAngleX = 0.0f;
-<<<<<<< HEAD
         cameraAngleY = 15.0f;
         cameraDistance = 18.0f;
-=======
         cameraAngleY = 30.0f;
         cameraDistance = 15.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
         break;
 
     case '2': //phải
         cameraAngleX = 90.0f;
-<<<<<<< HEAD
         cameraAngleY = 15.0f;
         cameraDistance = 18.0f;
-=======
         cameraAngleY = 25.0f;
         cameraDistance = 12.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
         break;
 
 	case '3': //phía sau
         cameraAngleX = 180.0f;
-<<<<<<< HEAD
         cameraAngleY = 15.0f;
         cameraDistance = 18.0f;
-=======
         cameraAngleY = 35.0f;
         cameraDistance = 14.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
         break;
 
 	case '4': //trái
         cameraAngleX = -90.0f;
-<<<<<<< HEAD
         cameraAngleY = 15.0f;
         cameraDistance = 18.0f;
-=======
         cameraAngleY = 20.0f;
         cameraDistance = 10.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
         break;
 
 	case '5': //trên cao
@@ -86,10 +74,7 @@ void specialKeyboard(int key, int x, int y) {
 
 void mouseButton(int button, int state, int x, int y)
 {
-<<<<<<< HEAD
-=======
     // CLICK CHUỘT TRÁI
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
     if (button == GLUT_LEFT_BUTTON)
     {
         if (state == GLUT_DOWN)
@@ -103,8 +88,6 @@ void mouseButton(int button, int state, int x, int y)
             isDragging = false;
         }
     }
-<<<<<<< HEAD
-=======
 
     // CUỘN LÊN -> ZOOM IN
     if (button == 3)
@@ -125,7 +108,6 @@ void mouseButton(int button, int state, int x, int y)
     }
 
     glutPostRedisplay();
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
 }
 
 void mouseMotion(int x, int y)
@@ -135,19 +117,11 @@ void mouseMotion(int x, int y)
         int dx = x - lastMouseX;
         int dy = y - lastMouseY;
 
-<<<<<<< HEAD
-        cameraAngleX += dx * 0.5f;
-        cameraAngleY += dy * 0.5f;
-
-        if (cameraAngleY > 89.0f)
-            cameraAngleY = 89.0f;
-=======
         cameraAngleX += dx * 0.4f;
         cameraAngleY += dy * 0.4f;
 
         if (cameraAngleY > 85.0f)
             cameraAngleY = 85.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
 
         if (cameraAngleY < 5.0f)
             cameraAngleY = 5.0f;
@@ -157,8 +131,4 @@ void mouseMotion(int x, int y)
 
         glutPostRedisplay();
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c

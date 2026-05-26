@@ -8,13 +8,8 @@
 
 // Khởi tạo thông số camera ban đầu
 float cameraAngleX = 0.0f;
-<<<<<<< HEAD
 float cameraAngleY = 15.0f;
 float cameraDistance = 18.0f;
-=======
-float cameraAngleY = 30.0f;
-float cameraDistance = 15.0f;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
 
 // Cấu hình giới hạn lồng kính
 const float MIN_X = -4.0f;
@@ -23,15 +18,11 @@ const float MIN_Z = -4.0f;
 const float MAX_Z = 4.0f;
 
 // Biến quản lý trạng thái kéo thả chuột
-<<<<<<< HEAD
+
 int lastMouseX = 0;
 int lastMouseY = 0;
+
 bool isDragging = false;
-=======
-bool isDragging = false;
-int lastMouseX = 0;
-int lastMouseY = 0;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
 
 // Vị trí lỗ rơi gấu
 const float DROP_HOLE_X = -3.5f;
@@ -94,21 +85,10 @@ int main(int argc, char** argv)
     init();
 
     glutDisplayFunc(display);
-
     glutIdleFunc(idle);
-
     glutKeyboardFunc(keyboard);
-<<<<<<< HEAD
-
     glutSpecialFunc(specialKeyboard);
-
     glutMouseFunc(mouseButton);
-
-=======
-    glutSpecialFunc(specialKeyboard);
-
-    glutMouseFunc(mouseButton);
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
     glutMotionFunc(mouseMotion);
 
     glutMainLoop();

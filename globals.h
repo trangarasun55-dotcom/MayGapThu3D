@@ -59,14 +59,11 @@ extern const float DROP_HOLE_X;
 extern const float DROP_HOLE_Z;
 
 // Biến quản lý trạng thái kéo thả chuột
-<<<<<<< HEAD
 extern int lastMouseX;
 extern int lastMouseY;
 extern bool isDragging;
-=======
 extern bool isDragging;
 extern int lastMouseX;
 extern int lastMouseY;
->>>>>>> 4a9254e0fe9c0614418ccfb212cd52cfb73adb3c
 
 #endif
