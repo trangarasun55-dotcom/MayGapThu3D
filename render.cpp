@@ -416,7 +416,7 @@ void drawClaw() // Phần gắp đồ chơi, bao gồm dây treo, đầu gắp v
     gluDeleteQuadric(quad);
 }
 
-void drawLabubu(float x, float y, float z, float r, float g, float b, float rotateY)
+void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
 {
     glDisable(GL_TEXTURE_2D);
 
@@ -427,7 +427,9 @@ void drawLabubu(float x, float y, float z, float r, float g, float b, float rota
     glRotatef(rotateY, 0, 1, 0);
 
     // THÂN
-    glBindTexture(GL_TEXTURE_2D, texture_longxanhla);
+    glEnable(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, furTexture);
 
     glPushMatrix();
     glScalef(0.7f, 0.65f, 0.7f);
@@ -552,13 +554,13 @@ void renderScene()
 
     drawClaw();
 
-    float colors[5][3] =
+    GLuint furTextures[5] =
     {
-        {1.0f, 0.9f, 0.4f},
-        {1.0f, 0.7f, 0.8f},
-        {0.7f, 1.0f, 0.8f},
-        {0.7f, 0.85f, 1.0f},
-        {0.9f, 0.6f, 0.9f}
+        texture_longxam,
+        texture_longxanhduong,
+        texture_longxanhla,
+        texture_longkem,
+        texture_longhong
     };
 
     for (int i = 0; i < TOY_COUNT; i++)
@@ -574,9 +576,7 @@ void renderScene()
             listToys[i].position.y,
             listToys[i].position.z,
 
-            colors[i % 5][0],
-            colors[i % 5][1],
-            colors[i % 5][2],
+            furTextures[i % 5],
 
             rotateAngle);
     }
