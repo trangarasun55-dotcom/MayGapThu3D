@@ -2,7 +2,7 @@
 #if defined(__APPLE__) || defined(MACOSX)
 #include <GLUT/glut.h>
 #else
-#include "../glut/glut.h"
+#include "../glut/glut.h"   
 #endif
 
 CameraMode currentCameraMode = CAMERA_PANORAMA;
