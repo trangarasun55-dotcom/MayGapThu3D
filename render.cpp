@@ -561,7 +561,6 @@ void setupLighting()
 void renderScene()
 {
     drawMachineBody();
-
     drawClaw();
 
     GLuint furTextures[5] =
