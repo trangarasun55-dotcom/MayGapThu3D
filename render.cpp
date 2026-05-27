@@ -149,40 +149,39 @@ void drawMachineBody()
 
     glPopMatrix();
 
-    // =========================
-    // CỬA NHẬN QUÀ
-    // =========================
+    // ==========================================
+    // CỬA NHẬN QUÀ ĐỘNG (CÓ MỞ RA / ĐÓNG LẠI)
+    // ==========================================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint); // viền cửa
-
+    // Khung viền cửa (giữ cố định trên thân máy)
+    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint);
     glPushMatrix();
-
     glTranslatef(0.0f, -2.2f, 1.76f);
-
     drawCube(1.2f, 1.2f, 0.06f);
-
     glPopMatrix();
 
-
-    glBindTexture(GL_TEXTURE_2D, texture_pink); // màu cửa chính
-
+    // Cánh cửa sập mở hất ra ngoài (Xoay quanh bản lề phía trên đỉnh cửa tại Y = -1.6f)
+    glBindTexture(GL_TEXTURE_2D, texture_pink);
     glPushMatrix();
 
-    glTranslatef(0.0f, -2.2f, 1.79f);
+    // Tịnh tiến bản lề lên cạnh trên của cửa để xoay cho đúng thực tế
+    glTranslatef(0.0f, -1.6f, 1.79f);
 
+    // Thực hiện xoay cánh cửa ra ngoài dựa vào biến doorOpenAngle cập nhật từ physics
+    glRotatef(doorOpenAngle, 1.0f, 0.0f, 0.0f);
+
+    // Dịch tâm khối vẽ xuống dưới để cạnh trên khớp vào vị trí bản lề
+    glTranslatef(0.0f, -0.6f, 0.0f);
     drawCube(0.9f, 0.9f, 0.04f);
-
     glPopMatrix();
 
-
-	glBindTexture(GL_TEXTURE_2D, texture_vang); // tay cầm cửa
-
+    // Núm tay cầm trên cánh cửa (Xoay đồng bộ theo cánh cửa)
+    glBindTexture(GL_TEXTURE_2D, texture_kem);
     glPushMatrix();
-
-    glTranslatef(0.0f, -1.85f, 1.82f);
-
+    glTranslatef(0.0f, -1.6f, 1.79f);
+    glRotatef(doorOpenAngle, 1.0f, 0.0f, 0.0f);
+    glTranslatef(0.0f, -0.25f, 0.03f); // Vị trí núm tay cầm trên mặt cửa
     glutSolidSphere(0.06f, 15, 15);
-
     glPopMatrix();
 
     // =========================
@@ -591,6 +590,22 @@ void renderScene()
 
             rotateAngle);
     }
+
+    // Vẽ cái lỗ rơi màu đen góc trái phía sau đáy lồng kính (Đã phóng to và dịch chuyển)
+    glDisable(GL_TEXTURE_2D);
+    glColor3f(0.1f, 0.1f, 0.1f); // Màu đen xám sâu thẳm
+    glPushMatrix();
+
+    // Tọa độ X = -1.2f, Z = -1.2f khớp hoàn toàn với DROP_ZONE mới
+    glTranslatef(-1.2f, -0.49f, -1.2f);
+
+    // Tăng kích thước X và Z từ 0.5f lên 0.9f để lỗ to hơn hẳn con gấu
+    glScalef(0.9f, 0.01f, 0.9f);
+
+    glutSolidCube(1.0f);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glColor3f(1.0f, 1.0f, 1.0f);
 
     drawMachineGlass();
 }

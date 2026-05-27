@@ -23,8 +23,8 @@ int lastMouseY = 0;
 bool isDragging = false;
 
 // Vị trí lỗ rơi gấu
-const float DROP_HOLE_X = -3.5f;
-const float DROP_HOLE_Z = -3.5f;
+const float DROP_HOLE_X = -1.2f;
+const float DROP_HOLE_Z = -1.2f;
 
 const int TOY_COUNT = 5;
 
@@ -35,6 +35,12 @@ hmtoan::Vec3 clawPosition = { 0, 3.2f, 0 };
 float clawOpenAngle = 45.0f;
 
 int grabbedToyIndex = -1;
+
+// Khởi tạo các biến quản lý trạng thái cửa xả gấu
+float doorOpenAngle = 0.0f;
+bool isDoorOpening = false;
+int exitingToyIndex = -1;
+float toyExitProgress = 0.0f;
 
 ClawState currentClawState = STATE_IDLE;
 

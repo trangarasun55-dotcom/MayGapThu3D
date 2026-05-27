@@ -63,4 +63,10 @@ extern int lastMouseX;
 extern int lastMouseY;
 extern bool isDragging;
 
+// --- QUẢN LÝ CỬA MỞ VÀ ĐẨY GẤU ---
+extern float doorOpenAngle;   // Góc mở cánh cửa nhận quà
+extern bool isDoorOpening;    // Trạng thái cửa đang mở hay đóng
+extern int exitingToyIndex;   // Chỉ số con gấu đang được đẩy ra khay thưởng
+extern float toyExitProgress; // Tiến trình đẩy gấu từ trong ra ngoài (0.0f -> 1.0f)
+
 #endif

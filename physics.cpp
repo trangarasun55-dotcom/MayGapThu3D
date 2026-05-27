@@ -10,8 +10,8 @@ const float LIMIT_MAX_Z = 1.4f;
 const float LIMIT_MIN_Y = -0.5f;
 const float LIMIT_MAX_Y = 3.2f;
 
-// Tọa độ lỗ rơi của máy gắp gấu
-const hmtoan::Vec3 DROP_ZONE = { -1.2f, 3.2f, 1.2f };
+// Tọa độ lỗ rơi: Góc bên trái phía sau của vùng kẹp hợp lệ
+const hmtoan::Vec3 DROP_ZONE = { -1.2f, 3.2f, -1.2f };
 
 void initPhysics()
 {
@@ -19,6 +19,12 @@ void initPhysics()
     clawOpenAngle = 45.0f;
     currentClawState = STATE_IDLE;
     grabbedToyIndex = -1;
+
+    // Reset trạng thái cửa xả và đẩy quà
+    doorOpenAngle = 0.0f;
+    isDoorOpening = false;
+    exitingToyIndex = -1;
+    toyExitProgress = 0.0f;
 
     for (int i = 0; i < TOY_COUNT; i++)
     {
@@ -144,11 +150,18 @@ void updatePhysics(float deltaTime)
         if (clawOpenAngle >= 45.0f) { // Mở kẹp ra góc ban đầu
             clawOpenAngle = 45.0f;
 
-            // Thả gấu rơi xuống lỗ -> Ẩn gấu đi
+            // Thả gấu rơi xuống lỗ bên trái
             if (grabbedToyIndex != -1) {
-                listToys[grabbedToyIndex].isActive = false;
-                listToys[grabbedToyIndex].isGrabbed = false;
+                exitingToyIndex = grabbedToyIndex;
+                listToys[exitingToyIndex].isGrabbed = false;
+
+                // Đặt gấu chuẩn bị xuất hiện từ bên trong hốc cửa xả (X=0, Y=-2.2, Z=1.5)
+                // chuẩn bị đẩy tịnh tiến ra ngoài theo trục Z
+                listToys[exitingToyIndex].position = { 0.0f, -2.4f, 1.4f };
+
                 grabbedToyIndex = -1;
+                isDoorOpening = true;   // Kích hoạt mở cửa xả
+                toyExitProgress = 0.0f; // Reset tiến trình đẩy gấu
             }
             currentClawState = STATE_IDLE; // Kết thúc 1 chu trình tự động
         }
@@ -165,4 +178,6 @@ void updatePhysics(float deltaTime)
         listToys[grabbedToyIndex].position.y = clawPosition.y - 1.5f; // Treo ngay dưới ngàm kẹp
         listToys[grabbedToyIndex].position.z = clawPosition.z;
     }
+
+
 }
