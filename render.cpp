@@ -189,7 +189,7 @@ void drawMachineBody()
     // MÁI
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_kem);
+    glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
 
     glPushMatrix();
 
