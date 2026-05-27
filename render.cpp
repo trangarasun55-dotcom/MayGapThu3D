@@ -205,7 +205,7 @@ void drawMachineBody()
     // 4 CỘT GÓC
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint);
+    glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
 
     float pillarOffset = 1.7f;
     float pillarSize = 0.16f;
