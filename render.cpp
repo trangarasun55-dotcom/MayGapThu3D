@@ -654,10 +654,11 @@ void initGraphics()
     texture_vang =
         loadTexture("data/vang.bmp");
 
+	// Thiết lập màu nền nhẹ nhàng
     glClearColor(
-        0.95f,
-        0.92f,
-        0.95f,
+        0.98f, // R (Đỏ - giữ độ sáng cao)
+        0.96f, // G (Xanh lá - giữ độ sáng cao)
+        0.89f, // B (Xanh dương - hạ thấp xuống một chút để tạo sắc vàng kem)
         1.0f);
 
     setupLighting();
