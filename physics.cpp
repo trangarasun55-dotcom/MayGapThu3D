@@ -155,9 +155,8 @@ void updatePhysics(float deltaTime)
                 exitingToyIndex = grabbedToyIndex;
                 listToys[exitingToyIndex].isGrabbed = false;
 
-                // Đặt gấu chuẩn bị xuất hiện từ bên trong hốc cửa xả (X=0, Y=-2.2, Z=1.5)
-                // chuẩn bị đẩy tịnh tiến ra ngoài theo trục Z
-                listToys[exitingToyIndex].position = { 0.0f, -2.4f, 1.4f };
+                // Tọa độ khởi tạo bên trong hốc cửa xả (gần với vị trí render cánh cửa y=-2.2, z=1.76)
+                listToys[exitingToyIndex].position = { 0.0f, -2.6f, 1.2f };
 
                 grabbedToyIndex = -1;
                 isDoorOpening = true;   // Kích hoạt mở cửa xả
@@ -178,6 +177,40 @@ void updatePhysics(float deltaTime)
         listToys[grabbedToyIndex].position.y = clawPosition.y - 1.5f; // Treo ngay dưới ngàm kẹp
         listToys[grabbedToyIndex].position.z = clawPosition.z;
     }
+    // =================================================================
+    // LOGIC ĐẨY GẤU VÀ ĐIỀU KHIỂN CỬA XẢ ĐỘNG (KHẮC PHỤC LỖI KẸT GẤU)
+    // =================================================================
+    if (isDoorOpening && exitingToyIndex != -1) {
+        // 1. Mở góc cửa xả dần dần lên đến góc -50 độ (hất ra ngoài)
+        if (doorOpenAngle > -50.0f) {
+            doorOpenAngle -= 120.0f * deltaTime; // Tốc độ mở cửa nhanh
+            if (doorOpenAngle < -50.0f) doorOpenAngle = -50.0f;
+        }
 
+        // 2. Tịnh tiến gấu trượt từ trong hốc ra ngoài theo trục Z (tiến về phía người chơi)
+        toyExitProgress += deltaTime * 0.6f; // Kiểm soát tốc độ trượt ra của gấu
+
+        // Gấu di chuyển tịnh tiến dần từ Z = 1.2f ra đến Z = 2.4f (vượt hẳn ra khỏi khay nhận quà)
+        listToys[exitingToyIndex].position.z = 1.2f + (toyExitProgress * 1.2f);
+
+        // Cho gấu hơi nghiêng hoặc hạ độ cao một chút tạo cảm giác trượt dốc xuống khay rơi đồ ngoài máy
+        if (listToys[exitingToyIndex].position.z > 1.76f) {
+            listToys[exitingToyIndex].position.y = -2.6f - (listToys[exitingToyIndex].position.z - 1.76f) * 0.4f;
+        }
+
+        // 3. Khi tiến trình hoàn thành (gấu đã trượt hoàn toàn ra ngoài)
+        if (toyExitProgress >= 1.0f) {
+            listToys[exitingToyIndex].isActive = false; // Ẩn gấu (người chơi đã nhận được quà)
+            exitingToyIndex = -1;
+        }
+    }
+    else {
+        // Nếu không có con gấu nào đang trượt ra, tự động đóng sập cửa xả lại về vị trí ban đầu (0 độ)
+        if (doorOpenAngle < 0.0f) {
+            doorOpenAngle += 80.0f * deltaTime;
+            if (doorOpenAngle > 0.0f) doorOpenAngle = 0.0f;
+            isDoorOpening = false;
+        }
+    }
 
 }
