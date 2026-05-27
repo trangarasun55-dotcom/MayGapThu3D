@@ -19,7 +19,7 @@ GLuint texture_longxanhla;
 GLuint texture_longhong;
 GLuint texture_longkem;
 
-GLuint texture_xanhngoc;
+GLuint texture_ngoclam;
 GLuint texture_pink;
 
 void drawCube(float x, float y, float z);
@@ -137,7 +137,7 @@ void drawMachineBody()
     // THÂN DƯỚI
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanhngoc);
+    glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
 
     glPushMatrix();
 
@@ -153,7 +153,7 @@ void drawMachineBody()
     // CỬA NHẬN QUÀ
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint);
+    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint); // viền cửa
 
     glPushMatrix();
 
@@ -164,7 +164,7 @@ void drawMachineBody()
     glPopMatrix();
 
 
-    glBindTexture(GL_TEXTURE_2D, texture_pink);
+    glBindTexture(GL_TEXTURE_2D, texture_pink); // màu cửa chính
 
     glPushMatrix();
 
@@ -175,7 +175,7 @@ void drawMachineBody()
     glPopMatrix();
 
 
-    glBindTexture(GL_TEXTURE_2D, texture_kem);
+	glBindTexture(GL_TEXTURE_2D, texture_vang); // tay cầm cửa
 
     glPushMatrix();
 
@@ -205,7 +205,7 @@ void drawMachineBody()
     // 4 CỘT GÓC
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_kim);
+    glBindTexture(GL_TEXTURE_2D, texture_xanh_mint);
 
     float pillarOffset = 1.7f;
     float pillarSize = 0.16f;
@@ -274,10 +274,10 @@ void drawMachineBody()
     glPopMatrix();
 
     // =========================
-    // JOYSTICK
+    // ĐÈN BÁO 
     // =========================
 
-    glBindTexture(GL_TEXTURE_2D, texture_bac);
+	glBindTexture(GL_TEXTURE_2D, texture_bac); // đế đèn
 
     glPushMatrix();
 
@@ -289,7 +289,7 @@ void drawMachineBody()
 
     GLUquadric* quad = gluNewQuadric();
 
-    glBindTexture(GL_TEXTURE_2D, texture_vang);
+	glBindTexture(GL_TEXTURE_2D, texture_kim); // chân đèn
 
     glPushMatrix();
 
@@ -642,8 +642,8 @@ void initGraphics()
     texture_longhong =
         loadTexture("data/longhong.bmp");
 
-    texture_xanhngoc =
-        loadTexture("data/xanhngoc.bmp");
+    texture_ngoclam =
+        loadTexture("data/ngoclam.bmp");
 
     texture_pink =
         loadTexture("data/pink.bmp");
