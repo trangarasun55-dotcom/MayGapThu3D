@@ -22,6 +22,11 @@ GLuint texture_longkem;
 GLuint texture_ngoclam;
 GLuint texture_pink;
 
+GLuint texture_gio;
+GLuint texture_nen;
+
+void drawBasket();
+void drawBackground();
 void drawCube(float x, float y, float z);
 
 GLuint loadTexture(const char* filename)
@@ -205,38 +210,25 @@ void drawMachineBody()
     // =========================
 
     glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
+    float pillarOffset = 1.67f;
+    float pillarRadius = 0.1f;
 
-    float pillarOffset = 1.7f;
-    float pillarSize = 0.16f;
+    GLUquadric* pillarQuad = gluNewQuadric();
+    gluQuadricTexture(pillarQuad, GL_TRUE);
 
-    // CỘT 1
-    glPushMatrix();
-    glTranslatef(-pillarOffset, 1.4f, pillarOffset);
-    glScalef(pillarSize, 4.3f, pillarSize);
-    drawTexturedCube(1.0f);
-    glPopMatrix();
+    // Mảng lưu vị trí x, z của 4 cột
+    float pX[] = { -pillarOffset, pillarOffset, -pillarOffset, pillarOffset };
+    float pZ[] = { pillarOffset, pillarOffset, -pillarOffset, -pillarOffset };
 
-    // CỘT 2
-    glPushMatrix();
-    glTranslatef(pillarOffset, 1.4f, pillarOffset);
-    glScalef(pillarSize, 4.3f, pillarSize);
-    drawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // CỘT 3
-    glPushMatrix();
-    glTranslatef(-pillarOffset, 1.4f, -pillarOffset);
-    glScalef(pillarSize, 4.3f, pillarSize);
-    drawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // CỘT 4
-    glPushMatrix();
-    glTranslatef(pillarOffset, 1.4f, -pillarOffset);
-    glScalef(pillarSize, 4.3f, pillarSize);
-    drawTexturedCube(1.0f);
-    glPopMatrix();
-
+    for (int i = 0; i < 4; i++) {
+        glPushMatrix();
+        glTranslatef(pX[i], -0.6f, pZ[i]); // Kéo trụ dài từ đế lên mái
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Xoay trụ đứng thẳng theo trục Y
+        gluCylinder(pillarQuad, pillarRadius, pillarRadius, 4.5f, 30, 30);
+        glPopMatrix();
+    }
+    gluDeleteQuadric(pillarQuad);
+    
     // =========================
     // KHỐI DI CHUYỂN TRÊN TRẦN
     // =========================
@@ -460,6 +452,7 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
 
     // MẮT
     glDisable(GL_TEXTURE_2D);
+    glDisable(GL_LIGHTING);
     glColor3f(0.0f, 0.0f, 0.0f);
 
     glPushMatrix();
@@ -472,38 +465,8 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY)
     glutSolidSphere(0.04f, 20, 20);
     glPopMatrix();
 
-    // MIỆNG
-    glDisable(GL_TEXTURE_2D);
-    glColor3f(0.4f, 0.1f, 0.1f);
-
-    glBegin(GL_LINE_STRIP);
-
-    for (float i = -0.5f; i <= 0.5f; i += 0.05f)
-    {
-        glVertex3f(
-            i * 0.12f,
-            0.35f - (i * i * 0.05f),
-            0.4f);
-    }
-
-    glEnd();
-
-    // MÁ HỒNG
-    glDisable(GL_TEXTURE_2D);
-
-    glColor3f(1.0f, 0.7f, 0.8f);
-
-    glPushMatrix();
-    glTranslatef(-0.22f, 0.38f, 0.36f);
-    glutSolidSphere(0.05f, 20, 20);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslatef(0.22f, 0.38f, 0.36f);
-    glutSolidSphere(0.05f, 20, 20);
-    glPopMatrix();
-
-    // KẾT THÚC VẼ LABUBU, BẬT LẠI TEXTURE CHO CÁC PHẦN KHÁC
+    // KẾT THÚC VẼ gấu, BẬT LẠI TEXTURE CHO CÁC PHẦN KHÁC
+    glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0f, 1.0f, 1.0f);
     glPopMatrix();
@@ -558,11 +521,81 @@ void setupLighting()
         diffuseLight);
 }
 
+void drawBasket()
+{
+    glBindTexture(GL_TEXTURE_2D, texture_gio);
+    glPushMatrix();
+    // Đặt giỏ ngay dưới cửa xả
+    glTranslatef(0.0f, -3.4f, 2.6f);
+
+    // Vẽ thân giỏ (Dùng khối rỗng hoặc nắp hở)
+    // Mặt đáy
+    glPushMatrix(); 
+    glScalef(1.2f, 0.05f, 1.2f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    // 4 Vách gi
+    glPushMatrix(); 
+    glTranslatef(0.0f, 0.3f, 0.6f); 
+    glScalef(1.2f, 0.6f, 0.05f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(0.0f, 0.3f, -0.6f); 
+    glScalef(1.2f, 0.6f, 0.05f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(0.6f, 0.3f, 0.0f); 
+    glScalef(0.05f, 0.6f, 1.2f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    glPushMatrix(); 
+    glTranslatef(-0.6f, 0.3f, 0.0f); 
+    glScalef(0.05f, 0.6f, 1.2f); 
+    glutSolidCube(1.0f); 
+    glPopMatrix();
+
+    glPopMatrix();
+}
+
+void drawBackground()
+{
+    glDisable(GL_LIGHTING); // Background không cần đổ bóng
+    glBindTexture(GL_TEXTURE_2D, texture_nen);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, -15.0f); // Đẩy ra xa sau máy gắp
+    
+    glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); 
+    glVertex3f(-20.0f, -10.0f, 0.0f);
+
+    glTexCoord2f(1, 0); 
+    glVertex3f(20.0f, -10.0f, 0.0f);
+
+    glTexCoord2f(1, 1); 
+    glVertex3f(20.0f, 15.0f, 0.0f);
+
+    glTexCoord2f(0, 1); 
+    glVertex3f(-20.0f, 15.0f, 0.0f);
+    glEnd();
+
+    glPopMatrix();
+    glEnable(GL_LIGHTING);
+}
+
 void renderScene()
 {
+    drawBackground();
     drawMachineBody();
     drawClaw();
+    drawBasket();
 
+	// VẼ GẤU BÔNG TRONG MÁY GẮP
     GLuint furTextures[5] =
     {
         texture_longxam,
@@ -590,18 +623,28 @@ void renderScene()
             rotateAngle);
     }
 
-    // Vẽ cái lỗ rơi màu đen góc trái phía sau đáy lồng kính (Đã phóng to và dịch chuyển)
+    // ==========================================
+        // VẼ LỖ RƠI CÓ CHIỀU SÂU (Chuyển sang góc trái trước)
+        // ==========================================
     glDisable(GL_TEXTURE_2D);
-    glColor3f(0.1f, 0.1f, 0.1f); // Màu đen xám sâu thẳm
+    glColor3f(0.05f, 0.05f, 0.05f); // Màu rất tối tạo cảm giác sâu
     glPushMatrix();
+    glTranslatef(-1.2f, -0.5f, 1.2f);
 
-    // Tọa độ X = -1.2f, Z = -1.2f khớp hoàn toàn với DROP_ZONE mới
-    glTranslatef(-1.2f, -0.49f, -1.2f);
-
-    // Tăng kích thước X và Z từ 0.5f lên 0.9f để lỗ to hơn hẳn con gấu
+    // Đáy lỗ sâu bên dưới
+    glPushMatrix();
+    glTranslatef(0.0f, -1.0f, 0.0f);
     glScalef(0.9f, 0.01f, 0.9f);
-
     glutSolidCube(1.0f);
+    glPopMatrix();
+
+    // 4 thành ống của lỗ rơi
+    glColor3f(0.15f, 0.15f, 0.15f);
+    glPushMatrix(); glTranslatef(0.0f, -0.5f, -0.45f); glScalef(0.9f, 1.0f, 0.01f); glutSolidCube(1.0f); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.0f, -0.5f, 0.45f);  glScalef(0.9f, 1.0f, 0.01f); glutSolidCube(1.0f); glPopMatrix();
+    glPushMatrix(); glTranslatef(-0.45f, -0.5f, 0.0f); glScalef(0.01f, 1.0f, 0.9f); glutSolidCube(1.0f); glPopMatrix();
+    glPushMatrix(); glTranslatef(0.45f, -0.5f, 0.0f);  glScalef(0.01f, 1.0f, 0.9f); glutSolidCube(1.0f); glPopMatrix();
+
     glPopMatrix();
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -629,44 +672,24 @@ void initGraphics()
         GL_MODULATE
     );
 
-    texture_bac =
-        loadTexture("data/bac.bmp");
-
-    texture_hong_pastel =
-        loadTexture("data/hong_pastel.bmp");
-
-    texture_kem =
-        loadTexture("data/kem.bmp");
-
-    texture_xanh_mint =
-        loadTexture("data/xanh_mint.bmp");
+    texture_bac =loadTexture("data/bac.bmp");
+    texture_hong_pastel = loadTexture("data/hong_pastel.bmp");
+    texture_kem = loadTexture("data/kem.bmp");
+    texture_xanh_mint = loadTexture("data/xanh_mint.bmp");
     
-    texture_longxanhla =
-        loadTexture("data/longxanhla.bmp");
+    texture_longxanhla = loadTexture("data/longxanhla.bmp");
+	texture_longxanhduong = loadTexture("data/longxanhduong.bmp");
+	texture_longxam = loadTexture("data/longxam.bmp");
+    texture_longkem = loadTexture("data/longkem.bmp");
+    texture_longhong = loadTexture("data/longhong.bmp");
 
-	texture_longxanhduong =
-		loadTexture("data/longxanhduong.bmp");
+    texture_ngoclam = loadTexture("data/ngoclam.bmp");
+    texture_pink = loadTexture("data/pink.bmp");
+    texture_kim = loadTexture("data/kim.bmp");
+    texture_vang = loadTexture("data/vang.bmp");
 
-	texture_longxam =
-		loadTexture("data/longxam.bmp");
-
-    texture_longkem =
-        loadTexture("data/longkem.bmp");
-
-    texture_longhong =
-        loadTexture("data/longhong.bmp");
-
-    texture_ngoclam =
-        loadTexture("data/ngoclam.bmp");
-
-    texture_pink =
-        loadTexture("data/pink.bmp");
-
-    texture_kim =
-        loadTexture("data/kim.bmp");
-
-    texture_vang =
-        loadTexture("data/vang.bmp");
+    texture_nen =  loadTexture("data/nen.bmp");
+    texture_gio = loadTexture("data/gio.bmp");
 
 	// Thiết lập màu nền nhẹ nhàng
     glClearColor(

@@ -11,7 +11,7 @@ const float LIMIT_MIN_Y = -0.5f;
 const float LIMIT_MAX_Y = 3.2f;
 
 // Tọa độ lỗ rơi: Góc bên trái phía sau của vùng kẹp hợp lệ
-const hmtoan::Vec3 DROP_ZONE = { -1.2f, 3.2f, -1.2f };
+const hmtoan::Vec3 DROP_ZONE = { -1.2f, 3.2f, 1.2f };
 
 void initPhysics()
 {
@@ -32,12 +32,19 @@ void initPhysics()
         listToys[i].isGrabbed = false;
         listToys[i].isActive = true;
 
-        // Khởi tạo vị trí ngẫu nhiên cho gấu trong lồng
-        listToys[i].position.x = -1.2f + static_cast<float>(rand()) / (RAND_MAX / 2.4f);
+        bool inHole;
+        do {
+            // Rải gấu ngẫu nhiên trong lồng
+            listToys[i].position.x = -1.4f + static_cast<float>(rand()) / (RAND_MAX / 2.8f);
+            listToys[i].position.z = -1.4f + static_cast<float>(rand()) / (RAND_MAX / 2.8f);
 
-		listToys[i].position.y = -0.3f; // Đặt gấu nằm sát đáy lồng, có thể điều chỉnh nếu muốn gấu nằm cao hơn một chút
+            // Tính khoảng cách đến lỗ rơi để né
+            float distToHole = sqrt(pow(listToys[i].position.x - DROP_ZONE.x, 2) + pow(listToys[i].position.z - DROP_ZONE.z, 2));
+            inHole = (distToHole < 0.7f); // Bán kính 0.7 để gấu không lọt hố
+        } while (inHole);
 
-        listToys[i].position.z = -1.2f + static_cast<float>(rand()) / (RAND_MAX / 2.4f);
+        // Tạo hiệu ứng xếp chồng nhẹ nhàng
+        listToys[i].position.y = -0.3f + (i % 3) * 0.2f;
     }
 }
 
@@ -178,34 +185,34 @@ void updatePhysics(float deltaTime)
         listToys[grabbedToyIndex].position.z = clawPosition.z;
     }
     // =================================================================
-    // LOGIC ĐẨY GẤU VÀ ĐIỀU KHIỂN CỬA XẢ ĐỘNG (KHẮC PHỤC LỖI KẸT GẤU)
+    // LOGIC ĐẨY GẤU RƠI VÀO GIỎ
     // =================================================================
     if (isDoorOpening && exitingToyIndex != -1) {
-        // 1. Mở góc cửa xả dần dần lên đến góc -50 độ (hất ra ngoài)
         if (doorOpenAngle > -50.0f) {
-            doorOpenAngle -= 120.0f * deltaTime; // Tốc độ mở cửa nhanh
+            doorOpenAngle -= 120.0f * deltaTime;
             if (doorOpenAngle < -50.0f) doorOpenAngle = -50.0f;
         }
 
-        // 2. Tịnh tiến gấu trượt từ trong hốc ra ngoài theo trục Z (tiến về phía người chơi)
-        toyExitProgress += deltaTime * 0.6f; // Kiểm soát tốc độ trượt ra của gấu
+        // CHỈNH CHẬM TỐC ĐỘ RƠI (Giảm từ 0.6f xuống 0.25f)
+        toyExitProgress += deltaTime * 0.25f;
 
-        // Gấu di chuyển tịnh tiến dần từ Z = 1.2f ra đến Z = 2.4f (vượt hẳn ra khỏi khay nhận quà)
-        listToys[exitingToyIndex].position.z = 1.2f + (toyExitProgress * 1.2f);
+        // Gấu trượt theo đường cong Parabol để rơi vào giỏ
+        listToys[exitingToyIndex].position.z = 1.2f + (toyExitProgress * 1.5f); // Tiến ra xa
 
-        // Cho gấu hơi nghiêng hoặc hạ độ cao một chút tạo cảm giác trượt dốc xuống khay rơi đồ ngoài máy
         if (listToys[exitingToyIndex].position.z > 1.76f) {
-            listToys[exitingToyIndex].position.y = -2.6f - (listToys[exitingToyIndex].position.z - 1.76f) * 0.4f;
+            // Rơi tự do xuống giỏ (giỏ ở y = -3.2f)
+            listToys[exitingToyIndex].position.y = -2.6f - pow((listToys[exitingToyIndex].position.z - 1.76f), 2) * 1.5f;
         }
 
-        // 3. Khi tiến trình hoàn thành (gấu đã trượt hoàn toàn ra ngoài)
         if (toyExitProgress >= 1.0f) {
-            listToys[exitingToyIndex].isActive = false; // Ẩn gấu (người chơi đã nhận được quà)
+            // KHÔNG tắt isActive để gấu vẫn nằm trong giỏ
+            // Đặt cố định vị trí gấu trong giỏ
+            listToys[exitingToyIndex].position.y = -3.2f + (rand() % 10) * 0.05f; // Đáy giỏ
+            listToys[exitingToyIndex].position.z = 2.6f + (rand() % 10 - 5) * 0.02f;
             exitingToyIndex = -1;
         }
     }
     else {
-        // Nếu không có con gấu nào đang trượt ra, tự động đóng sập cửa xả lại về vị trí ban đầu (0 độ)
         if (doorOpenAngle < 0.0f) {
             doorOpenAngle += 80.0f * deltaTime;
             if (doorOpenAngle > 0.0f) doorOpenAngle = 0.0f;

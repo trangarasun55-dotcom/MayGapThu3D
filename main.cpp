@@ -24,9 +24,9 @@ bool isDragging = false;
 
 // Vị trí lỗ rơi gấu
 const float DROP_HOLE_X = -1.2f;
-const float DROP_HOLE_Z = -1.2f;
+const float DROP_HOLE_Z = 1.2f;
 
-const int TOY_COUNT = 5;
+const int TOY_COUNT = 15;
 
 Toy listToys[TOY_COUNT];
 
