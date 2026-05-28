@@ -7,7 +7,7 @@ const float LIMIT_MIN_X = -1.4f;
 const float LIMIT_MAX_X = 1.4f;
 const float LIMIT_MIN_Z = -1.4f;
 const float LIMIT_MAX_Z = 1.4f;
-const float LIMIT_MIN_Y = -0.5f;
+const float LIMIT_MIN_Y = -0.25f; //gấu đứng đúng trên mặt sàn kính, không bị lún
 const float LIMIT_MAX_Y = 3.2f;
 
 // Tâm của lỗ rơi gấu
@@ -60,7 +60,7 @@ void initPhysics()
 
         listToys[i].position.x = posX;
         listToys[i].position.z = posZ;
-        listToys[i].position.y = -0.45f; // Đáy gấu nằm khít trên mặt sàn
+        listToys[i].position.y = LIMIT_MIN_Y; // Đáy gấu nằm khít trên mặt sàn
     }
 }
 
@@ -168,20 +168,20 @@ void updatePhysics(float deltaTime) {
         break;
     }
 
-	case STATE_DROPPING: // Giai đoạn thả gấu ra ngoài
+    case STATE_DROPPING: // Giai đoạn thả gấu ra ngoài hố
         clawOpenAngle += rotateSpeed * 3.0f;
         if (clawOpenAngle >= 45.0f)
         {
             clawOpenAngle = 45.0f;
 
-            if (grabbedToyIndex != -1) 
+            if (grabbedToyIndex != -1)
             {
+                // Đánh dấu chuyển giao gấu sang hàng chờ xử lý rơi tự do trong lòng hố
                 exitingToyIndex = grabbedToyIndex;
                 listToys[exitingToyIndex].isGrabbed = false;
-                grabbedToyIndex = -1;
+                grabbedToyIndex = -1; // Càng gắp sạch bóng giải phóng hoàn toàn
 
-                isDoorOpening = true;
-                toyExitProgress = 0.0f;
+                currentClawState = STATE_IDLE; // Đưa càng gắp về vị trí nghỉ sẵn sàng
             }
             else {
                 currentClawState = STATE_IDLE;
@@ -194,85 +194,83 @@ void updatePhysics(float deltaTime) {
         break;
     }
 
-    // Gấu bám dính di chuyển theo càng gắp
+    // Gấu bám dính di chuyển theo càng gắp (Chỉ chạy khi gấu đang bị gắp thực sự trên không)
     if (grabbedToyIndex != -1) {
         listToys[grabbedToyIndex].position.x = clawPosition.x;
         listToys[grabbedToyIndex].position.y = clawPosition.y - 1.2f;
         listToys[grabbedToyIndex].position.z = clawPosition.z;
     }
 
+    // XỬ LÝ QUỸ ĐẠO RƠI TỰ DO XUỐNG HỐ TRƯỚC KHI BIẾN MẤT
+    if (exitingToyIndex != -1 && !isDoorOpening) {
+        // Cho gấu rơi thẳng đứng dọc theo hố (tốc độ cao)
+        listToys[exitingToyIndex].position.y -= 4.0f * deltaTime;
+
+        // Khi gấu rơi chìm sâu hoàn toàn dưới hố đáy sâu (-1.95f)
+        if (listToys[exitingToyIndex].position.y <= -1.95f) {
+            listToys[exitingToyIndex].isActive = false; // Ẩn gấu hoàn toàn tạo hiệu ứng lọt hố khuất mắt
+
+            // Bắt đầu chu trình mở cửa sập và đẩy gấu ra khay ngoài
+            isDoorOpening = true;
+            doorOpenAngle = 0.0f;
+            toyExitProgress = 0.0f;
+        }
+    }
+
     // =================================================================
-    // LOGIC RƠI GẤU XUYÊN QUA CỬA SẬP VÀ LĂN RA 2 BÊN PHÍA TRƯỚC MÁY
+    // LOGIC CỬA SẬP BẢN LỀ ĐÁY VÀ ĐẨY GẤU CHUI RA MÁNG NHẬN QUÀ
     // =================================================================
-    if (isDoorOpening && exitingToyIndex != -1) 
-    {
-        // Hoạt ảnh mở mượt cửa sập mặt trước máy
-        if (doorOpenAngle > -60.0f) 
-        {
-            doorOpenAngle -= 140.0f * deltaTime;
-            if (doorOpenAngle < -60.0f) doorOpenAngle = -60.0f;
+    if (isDoorOpening) {
+        // 1. Cho cửa sập lật mở ra phía trước từ từ (Góc mở tối đa khoảng 60-70 độ theo thực tế)
+        if (doorOpenAngle < 65.0f) {
+            doorOpenAngle += 120.0f * deltaTime; // Tốc độ lật mở cửa mượt mà
+            if (doorOpenAngle > 65.0f) doorOpenAngle = 65.0f;
         }
 
-        toyExitProgress += deltaTime * 0.45f; // Điều chỉnh tốc độ hành trình gấu rơi lăn
+        // 2. CHỈ KHI CỬA ĐÃ LẬT MỞ TOÀN BỘ THÌ GẤU MỚI BẮT ĐẦU CHUI RA TỪ TRONG KHE CỬA
+        if (doorOpenAngle >= 65.0f && exitingToyIndex != -1) {
 
-        if (toyExitProgress <= 0.35f) {
-            // Giai đoạn 1: Gấu rơi thẳng đứng từ càng gắp luồn sâu xuống qua lỗ sàn kính (Y=-0.5) xuống lòng thân máy (Y=-1.8)
-            float t = toyExitProgress / 0.35f;
-            listToys[exitingToyIndex].position.x = DROP_ZONE.x;
-            listToys[exitingToyIndex].position.z = DROP_ZONE.z;
-            listToys[exitingToyIndex].position.y = LIMIT_MAX_Y - t * (LIMIT_MAX_Y - (-1.8f));
-        }
-        else if (toyExitProgress <= 0.5f) {
-            // Giai đoạn 2: Trượt theo máng nghiêng ẩn từ trong hố dồn ra vị trí cửa sập trung tâm mặt trước (X=0.0, Y=-1.8, Z=1.76)
-            float t = (toyExitProgress - 0.35f) / 0.15f;
-            listToys[exitingToyIndex].position.x = DROP_ZONE.x + t * (0.0f - DROP_ZONE.x);
-            listToys[exitingToyIndex].position.z = DROP_ZONE.z + t * (1.76f - DROP_ZONE.z);
-            listToys[exitingToyIndex].position.y = -1.8f;
-        }
-        else {
-            // Giai đoạn 3: Rơi qua cửa sập bật ra ngoài, lăn một đoạn dài hướng ra trước máy và tách sang 2 bên
-            float t = (toyExitProgress - 0.5f) / 0.5f;
+            // Frame đầu tiên gấu chuẩn bị trượt ra ngoài
+            if (toyExitProgress == 0.0f) {
+                listToys[exitingToyIndex].isActive = true; // Hiện gấu trở lại tại máng cửa xả
+                // Điểm xuất phát: Nằm khít phía sau tấm cửa xả chuẩn bị trượt
+                listToys[exitingToyIndex].position = Vec3(0.0f, -1.8f, 1.76f);
+            }
 
-            int side = caughtToysCount % 2;     // 0: xếp sang bên trái máy, 1: xếp sang bên phải máy
-            int slotIndex = caughtToysCount / 2; // Số thứ tự hàng xếp trên nhánh đó
+            // Tăng tiến trình trượt ra ngoài của gấu
+            toyExitProgress += 1.2f * deltaTime;
 
-            // Tính toán vị trí đích bên ngoài máy một khoảng cách dài về phía trước (Z=2.8) và dạt 2 bên để thoáng ô cửa trung tâm
-            float targetX = (side == 0) ? (-1.8f - slotIndex * 0.5f) : (1.8f + slotIndex * 0.5f);
-            float targetZ = 2.8f;      // Đẩy xa hẳn máy
-            float targetY = -3.2f;     // Điểm đáp tiếp đất phẳng ngoài máy
+            float t = toyExitProgress;
+            if (t > 1.0f) t = 1.0f;
 
-            // Nội suy quỹ đạo Lerp Parabol có nảy nhẹ hình sin khi gấu lăn ra ngoài
-            listToys[exitingToyIndex].position.x = 0.0f + t * (targetX - 0.0f);
-            listToys[exitingToyIndex].position.z = 1.76f + t * (targetZ - 1.76f);
-            listToys[exitingToyIndex].position.y = -1.8f + t * (targetY - (-1.8f)) + sin(t * 3.14159f) * 0.4f;
-        }
-
-        if (toyExitProgress >= 1.0f) {
-            // Chốt hạ vị trí cố định của gấu ngoài hàng chờ, hoàn thành chu kỳ để đón con tiếp theo lăn ra
+            // Xác định phân bổ máng nhận quà bên ngoài sang 2 bên trái/phải cân đối
             int side = caughtToysCount % 2;
             int slotIndex = caughtToysCount / 2;
-            listToys[exitingToyIndex].position.x = (side == 0) ? (-1.8f - slotIndex * 0.5f) : (1.8f + slotIndex * 0.5f);
-            listToys[exitingToyIndex].position.z = 2.8f;
-            listToys[exitingToyIndex].position.y = -3.2f;
+            float targetX = (side == 0) ? (-1.8f - slotIndex * 0.5f) : (1.8f + slotIndex * 0.5f);
+            float targetY = -3.2f;
+            float targetZ = 2.8f;
 
-            caughtToysCount++;
-            exitingToyIndex = -1;
-            if (currentClawState == STATE_IDLE) {
-                // Trả trạng thái máy sẵn sàng
+            // Nội suy di chuyển gấu trượt nghiêng từ khe cửa xập lăn ra ngoài khay
+            listToys[exitingToyIndex].position.x = 0.0f + t * (targetX - 0.0f);
+            listToys[exitingToyIndex].position.z = 1.76f + t * (targetZ - 1.76f);
+            // Tạo chuyển động hình sin nảy nhẹ sinh động khi lăn từ dốc xuống khay thưởng
+            listToys[exitingToyIndex].position.y = -1.8f + t * (targetY - (-1.8f)) + sin(t * 3.14159f) * 0.3f;
+
+            // 3. Khi gấu đã trượt hẳn ra khay an toàn hoàn tất
+            if (toyExitProgress >= 1.0f) {
+                listToys[exitingToyIndex].position = Vec3(targetX, targetY, targetZ); // Khóa vị trí cố định
+
+                caughtToysCount++;     // Tăng điểm
+                exitingToyIndex = -1;  // Giải phóng biến trạng thái gấu chu trình này
+                isDoorOpening = false; // Kích hoạt chu trình khép cửa bảo vệ lại
             }
         }
     }
     else {
-        // Đóng khít cửa sập lại mượt mà khi không có gấu thoát ra ngoài
-        if (doorOpenAngle < 0.0f) {
-            doorOpenAngle += 100.0f * deltaTime;
-            if (doorOpenAngle > 0.0f) {
-                doorOpenAngle = 0.0f;
-                isDoorOpening = false;
-                if (currentClawState == STATE_RETURNING || currentClawState == STATE_DROPPING) {
-                    currentClawState = STATE_IDLE;
-                }
-            }
+        // Đóng khít cửa sập lại bằng cách tự động khép góc lật về 0 khi không có gấu chui ra
+        if (doorOpenAngle > 0.0f && exitingToyIndex == -1) {
+            doorOpenAngle -= 150.0f * deltaTime;
+            if (doorOpenAngle < 0.0f) doorOpenAngle = 0.0f;
         }
     }
 }
