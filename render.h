@@ -12,7 +12,6 @@ void renderScene();
 // Các hàm vẽ thành phần (có thể gọi từ ngoài nếu cần test riêng)
 void drawMachineBody();
 void drawClaw();
-void drawBasket();
 void drawBackground();
 void drawMachineGlass();
 
