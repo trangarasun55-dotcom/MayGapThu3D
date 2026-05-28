@@ -26,14 +26,11 @@ bool isDragging = false;
 const float DROP_HOLE_X = -1.2f;
 const float DROP_HOLE_Z = 1.2f;
 
-const int TOY_COUNT = 15;
-
-Toy listToys[TOY_COUNT];
+const int TOY_COUNT = 15; // Số lượng gấu trong lồng kính
+Toy listToys[TOY_COUNT]; 
 
 hmtoan::Vec3 clawPosition = { 0, 3.2f, 0 };
-
 float clawOpenAngle = 45.0f;
-
 int grabbedToyIndex = -1;
 
 // Khởi tạo các biến quản lý trạng thái cửa xả gấu
@@ -42,10 +39,13 @@ bool isDoorOpening = false;
 int exitingToyIndex = -1;
 float toyExitProgress = 0.0f;
 
+// Biến đếm số lượng gấu đã gắp thành côn
 ClawState currentClawState = STATE_IDLE;
 
+// Biến quản lý chế độ camera hiện tại
 CameraMode currentCameraMode = CAMERA_PANORAMA;
 
+// Hàm khởi tạo OpenGL
 void init()
 {
     glEnable(GL_DEPTH_TEST);
@@ -55,6 +55,7 @@ void init()
     initPhysics();
 }
 
+// Hàm vẽ lại toàn bộ cảnh mỗi khi có sự thay đổi
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -66,6 +67,7 @@ void display()
     glutSwapBuffers();
 }
 
+// Hàm cập nhật vật lý và trạng thái máy mỗi frame khi không có sự kiện đầu vào
 void idle()
 {
     updatePhysics(0.016f);
@@ -73,6 +75,7 @@ void idle()
     glutPostRedisplay();
 }
 
+// ===== HÀM MAIN ===== //
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
@@ -82,25 +85,25 @@ int main(int argc, char** argv)
         GLUT_RGB |
         GLUT_DEPTH);
 
-    glutInitWindowSize(1000, 700);
+    glutInitWindowSize(1024, 1024);
 
     glutCreateWindow("May Gap Thu 3D");
 
-    init();
+	init(); // Hàm khởi tạo OpenGL và thiết lập trạng thái ban đầu
 
-    glutDisplayFunc(display);
+	glutDisplayFunc(display); // Hàm vẽ lại toàn bộ cảnh mỗi khi có sự thay đổi
 
-    glutIdleFunc(idle);
+	glutIdleFunc(idle); // Hàm cập nhật vật lý và trạng thái máy mỗi frame
 
-    glutKeyboardFunc(keyboard);
+    glutKeyboardFunc(keyboard); // Hàm xử lý phím thườn
 
-    glutSpecialFunc(specialKeyboard);
+    glutSpecialFunc(specialKeyboard); // Hàm xử lý phím đặc biệt (các phím mũi tên)
 
-    glutMouseFunc(mouseButton);
+	glutMouseFunc(mouseButton); // Hàm xử lý sự kiện nhấn chuột
 
-    glutMotionFunc(mouseMotion);
+	glutMotionFunc(mouseMotion); // Hàm xử lý sự kiện di chuyển chuột khi đang nhấn giữ
 
-    glutMainLoop();
+	glutMainLoop(); // Bắt đầu vòng lặp chính của GLUT
 
     return 0;
 }

@@ -5,13 +5,13 @@
 #include "globals.h"
 #include "imageloader.h"
 
-// Biến lưu trữ Textures
+// BIẾN LƯU ID CỦA CÁC TEXTURE ĐƯỢC SỬ DỤNG TRONG CẢNH VẬT
 GLuint texture_osao, texture_may, texture_suoisao;
 GLuint texture_kim;
 GLuint texture_longxam, texture_longxanhduong, texture_longxanhla, texture_longhong, texture_longkem;
 GLuint texture_saosang, texture_saoroi, texture_nensao;
 
-// Hàm tải texture
+// HÀM TẢI TEXTURE TỪ FILE BMP VÀ TRẢ VỀ ID CỦA TEXTURE ĐỂ SỬ DỤNG TRONG OPENGL
 GLuint loadTexture(const char* filename) {
     int width, height;
     unsigned char* pixels = loadBMP(filename, width, height);
@@ -29,7 +29,7 @@ GLuint loadTexture(const char* filename) {
     return textureID;
 }
 
-// Hàm vẽ khối lập phương có dán texture
+// HÀM VẼ KHỐI HỘP CÓ TEXTURE, ĐƯỢC SỬ DỤNG LÀM NỀN CHO THÂN MÁY GẮP
 void drawTexturedCube(float size) {
     float s = size / 2.0f;
     glBegin(GL_QUADS);
@@ -60,34 +60,8 @@ void drawTexturedCube(float size) {
     glEnd();
 }
 
-// Hàm vẽ hình hộp biến đổi hình khối
-void drawBox(GLuint texture, float tx, float ty, float tz, float sx, float sy, float sz) {
-    if (texture > 0) {
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, texture);
-    }
-    else {
-        glDisable(GL_TEXTURE_2D);
-    }
-    glPushMatrix();
-    glTranslatef(tx, ty, tz);
-    glScalef(sx, sy, sz);
-    drawTexturedCube(1.0f);
-    glPopMatrix();
-    if (texture == 0) glEnable(GL_TEXTURE_2D);
-}
-
-// Hàm vẽ hình hộp đặc với màu sắc đơn sắc, không dán texture
-void drawSolidBox(float tx, float ty, float tz, float sx, float sy, float sz) {
-    glPushMatrix();
-    glTranslatef(tx, ty, tz);
-    glScalef(sx, sy, sz);
-    glutSolidCube(1.0f);
-    glPopMatrix();
-}
-
-// Hàm vẽ hình hộp CÓ BO TRÒN GÓC (sử dụng thuật toán ghép cylinder để làm mềm 4 cạnh đứng)
-void drawRoundedBox(GLuint texture, float tx, float ty, float tz, float sx, float sy, float sz)
+// HÀM VẼ HỘP CÓ TEXTURE ĐƯỢC SỬ DỤNG CHO THÂN MÁY
+void drawBox(GLuint texture, float tx, float ty, float tz, float sx, float sy, float sz) 
 {
     if (texture > 0) {
         glEnable(GL_TEXTURE_2D);
@@ -96,19 +70,44 @@ void drawRoundedBox(GLuint texture, float tx, float ty, float tz, float sx, floa
     else {
         glDisable(GL_TEXTURE_2D);
     }
+    
+    glPushMatrix();
+    glTranslatef(tx, ty, tz);
+    glScalef(sx, sy, sz);
+    drawTexturedCube(1.0f);
+    glPopMatrix();
+    if (texture == 0) glEnable(GL_TEXTURE_2D);
+}
 
+// HÀM VẼ HỘP ĐƠN GIẢN KHÔNG CÓ GÓC TRÒN VÀ KHÔNG CÓ TEXTURE
+void drawSolidBox(float tx, float ty, float tz, float sx, float sy, float sz) {
+    glPushMatrix();
+    glTranslatef(tx, ty, tz);
+    glScalef(sx, sy, sz);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+}
+
+// HÀM VẼ HỘP CÓ GÓC TRÒN VÀ CÓ TEXTURE, ĐƯỢC SỬ DỤNG CHO THÂN MÁY VÀ BÀN ĐIỀU KHIỂN
+void drawRoundedBox(GLuint texture, float tx, float ty, float tz, float sx, float sy, float sz) 
+{ 
+    if (texture > 0) {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texture);
+    }
+    else {
+        glDisable(GL_TEXTURE_2D);
+    }
+    // Vẽ phần thân hộp chính giữa, đã được cắt bớt 2 * r ở mỗi chiều để tạo chỗ cho các góc tròn
     glPushMatrix();
     glTranslatef(tx, ty, tz);
 
-    // Tính toán bán kính bo góc phù hợp
     float r = 0.2f;
-    if (sx < 0.8f || sz < 0.8f) r = 0.05f; // Bán kính nhỏ cho các vật thể nhỏ (tay nắm cửa...)
+    if (sx < 0.8f || sz < 0.8f) r = 0.05f;
 
-    // Vẽ 2 khối hộp chữ thập bên trong để lấp đầy phần lõi
     glPushMatrix(); glScalef(sx, sy, sz - 2 * r); drawTexturedCube(1.0f); glPopMatrix();
     glPushMatrix(); glScalef(sx - 2 * r, sy, sz); drawTexturedCube(1.0f); glPopMatrix();
-
-    // Vẽ 4 cột trụ (cylinder) ở 4 góc để tạo độ cong mềm mại
+	// Vẽ phần góc tròn của hộp bằng cách sử dụng gluCylinder và gluDisk
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, GL_TRUE);
 
@@ -116,34 +115,32 @@ void drawRoundedBox(GLuint texture, float tx, float ty, float tz, float sx, floa
     float cz = sz / 2.0f - r;
     float posX[] = { cx, cx, -cx, -cx };
     float posZ[] = { cz, -cz, cz, -cz };
-
+    // Vẽ 4 góc tròn của hộp
     for (int i = 0; i < 4; i++) {
         glPushMatrix();
         glTranslatef(posX[i], -sy / 2.0f, posZ[i]);
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
         gluCylinder(quad, r, r, sy, 15, 1);
-        // Bịt nắp trên và dưới của góc bo
         gluDisk(quad, 0.0f, r, 15, 1);
         glTranslatef(0.0f, 0.0f, sy);
         gluDisk(quad, 0.0f, r, 15, 1);
         glPopMatrix();
     }
-
+	// Khôi phục trạng thái render cho các phần tử khác trong cảnh vật
     gluDeleteQuadric(quad);
     glPopMatrix();
 
     if (texture == 0) glEnable(GL_TEXTURE_2D);
 }
 
-// ===== HỆ THỐNG BỆ ĐIỀU KHIỂN =====
+// HÀM VẼ BÀN ĐIỀU KHIỂN
 void drawControlPanel() {
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, GL_TRUE);
 
-    // 1. Bệ gỗ điều khiển
     drawRoundedBox(texture_saoroi, 0.0f, -0.65f, 1.9f, 3.5f, 0.3f, 0.6f);
 
-    // 2. Chân cần gạt (Texture kim loại)
+	// VẼ ĐĨA XOAY CHÍNH GIỮA BÀN ĐIỀU KHIỂN
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture_kim);
     glPushMatrix();
@@ -152,7 +149,7 @@ void drawControlPanel() {
     gluDisk(quad, 0.0f, 0.22f, 25, 1);
     glPopMatrix();
 
-    // 3. CẦN GẠT JOYSTICK
+	// VẼ TRỤ TRÒN GIỮA ĐĨA XOAY CHÍNH
     glPushMatrix();
     glTranslatef(-0.6f, -0.5f, 1.9f);
     glPushMatrix();
@@ -160,7 +157,7 @@ void drawControlPanel() {
     gluCylinder(quad, 0.04f, 0.04f, 0.55f, 20, 20);
     glPopMatrix();
 
-    // Đầu bi Joystick
+    // VẼ NÚT GẠT
     glDisable(GL_TEXTURE_2D);
     glColor3f(0.0f, 0.45f, 0.9f);
     glPushMatrix();
@@ -169,29 +166,29 @@ void drawControlPanel() {
     glPopMatrix();
     glPopMatrix();
 
-    // 4. NÚT BẤM (Nâng cao và làm dày mặt nút)
+    // VẼ NÚT BẤM
     glColor3f(0.1f, 0.5f, 1.0f);
     glPushMatrix();
-    glTranslatef(0.6f, -0.42f, 1.9f); // Y=-0.42 để nổi rõ trên mặt bệ (Y=-0.5)
+    glTranslatef(0.6f, -0.42f, 1.9f);
     glScalef(1.0f, 0.4f, 1.0f);
     glutSolidSphere(0.2f, 30, 30);
     glPopMatrix();
 
+	// Khôi phục trạng thái render cho các phần tử khác trong cảnh vật
     glEnable(GL_TEXTURE_2D);
     glColor3f(1, 1, 1);
     gluDeleteQuadric(quad);
 }
 
-// Hàm vẽ thân máy
+// HÀM VẼ THÂN MÁY GẮP, BAO GỒM THÂN VỎ CHÍNH, MÁI CHE, CỘT TRỤ ĐỨNG 4 GÓC, BÀN ĐIỀU KHIỂN VÀ HỆ THỐNG CỬA SẬP XẢ QUÀ CHÍNH GIỮA MẶT TRƯỚC THÂN MÁY
 void drawMachineBody() {
-    // 1. Thân dưới
+    // Thân vỏ bên dưới máy
     drawRoundedBox(texture_osao, 0.0f, -2.1f, 0.0f, 3.5f, 3.2f, 3.5f);
 
-
-    // 2. Mái máy
+    // Mái máy che bên trên lồng
     drawRoundedBox(texture_osao, 0.0f, 4.0f, 0.0f, 3.5f, 0.8f, 3.5f);
 
-    // 3. Bốn cột góc (Bù khe hở 0.1 để chạm khít mái)
+	// Cột trụ đứng 4 góc xung quanh thân máy
     float pO = 1.6f;
     float pX[] = { -pO, pO, -pO, pO };
     float pZ[] = { pO, pO, -pO, -pO };
@@ -207,70 +204,77 @@ void drawMachineBody() {
         glPopMatrix();
     }
 
-    // Gọi hàm vẽ hệ thống điều khiển
-    drawControlPanel();
+    drawControlPanel(); // VẼ BÀN ĐIỀU KHIỂN 
 
-    // 4. Cửa sập và Tay nắm
+    // HỆ THỐNG CỬA SẬP XẢ QUÀ CHÍNH GIỮA MẶT TRƯỚC THÂN MÁY
     glPushMatrix();
-    glTranslatef(0.0f, -1.8f, 1.76f); // Vị trí mặt trước thân máy
+    glTranslatef(0.0f, -1.8f, 1.76f);
     glRotatef(doorOpenAngle, 1.0f, 0.0f, 0.0f);
 
-    // Cửa sập
+    // Dán texture saosang.bmp đồng bộ cho cửa quà nhận diện đồng nhất
     drawRoundedBox(texture_saosang, 0.0f, -0.6f, 0.0f, 1.4f, 1.4f, 0.05f);
-
-    // Tay nắm cửa (Hạ thấp Y xuống -1.1f để nằm gần cạnh dưới cửa)
     drawRoundedBox(texture_kim, 0.0f, -1.1f, 0.05f, 0.6f, 0.1f, 0.08f);
     glPopMatrix();
 
     gluDeleteQuadric(quad);
 }
 
+// HÀM VẼ LỖ RƠI DUY NHẤT ĐƯỢC TỐI ƯU TOẠ ĐỘ ĐỘNG THEO DROP_ZONE
 void drawDropHole() {
-    // Bật dán texture ngôi sao sáng cho lỗ rơi [cite: 495, 527]
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture_saosang); 
-    [cite:495, 528] ;
+    glBindTexture(GL_TEXTURE_2D, texture_saosang);
     glColor3f(1.0f, 1.0f, 1.0f);
 
-    // DROP_ZONE đặt ở đâu thì vẽ lỗ chuẩn tại đó (Ví dụ: góc trái phía trước máy) [cite: 334]
-    float hX = DROP_ZONE.x; 
-    [cite:334] ;
-        float hZ = DROP_ZONE.z; [cite:334]
-        float hY = -0.5f; // Bằng mặt sàn bệ kính
+    float hX = DROP_ZONE.x;
+    float hZ = DROP_ZONE.z;
+    float hY = -0.5f; // Bắt đầu lõm sâu xuống từ mặt sàn kính bảo vệ
 
-    // Vẽ 5 mặt của hộp lõm làm lỗ rơi (để khi nhìn từ trên xuống thấy chiều sâu)
+    // Vẽ khối hộp chìm lõm sâu xuống kết nối lòng thân dưới của máy gắp
     glBegin(GL_QUADS);
-    // Đáy lỗ rơi
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.35f, hY - 0.4f, hZ - 0.35f);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.35f, hY - 0.4f, hZ - 0.35f);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.35f, hY - 0.4f, hZ + 0.35f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.35f, hY - 0.4f, hZ + 0.35f);
+    // Đáy lỗ sâu thẳm ẩn bên dưới
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ + 0.4f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ + 0.4f);
 
-    // Thành sau lỗ
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.35f, hY - 0.4f, hZ - 0.35f);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.35f, hY - 0.4f, hZ - 0.35f);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.35f, hY, hZ - 0.35f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.35f, hY, hZ - 0.35f);
+    // Các mặt vách đứng bọc xung quanh hố thu hút ánh nhìn
+    // Mặt vách phía trước
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.4f, hY, hZ - 0.4f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.4f, hY, hZ - 0.4f);
 
-    // Thành trước lỗ
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.35f, hY - 0.4f, hZ + 0.35f);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.35f, hY - 0.4f, hZ + 0.35f);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.35f, hY, hZ + 0.35f);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.35f, hY, hZ + 0.35f);
+    // Mặt vách phía sau
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ + 0.4f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ + 0.4f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.4f, hY, hZ + 0.4f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.4f, hY, hZ + 0.4f);
+
+	// Mặt vách bên trái
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX - 0.4f, hY - 0.6f, hZ + 0.4f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX - 0.4f, hY, hZ + 0.4f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX - 0.4f, hY, hZ - 0.4f);
+
+	// Mặt vách bên phải
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ - 0.4f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(hX + 0.4f, hY - 0.6f, hZ + 0.4f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(hX + 0.4f, hY, hZ + 0.4f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(hX + 0.4f, hY, hZ - 0.4f);
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
 }
 
-// ===== HỆ THỐNG CÀNG GẮP =====
+// HÀM VẼ CÀNG GẮP
 void drawClaw() {
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, GL_TRUE);
-
+    
     glPushMatrix();
     glTranslatef(clawPosition.x, clawPosition.y, clawPosition.z);
 
-    // 1. DÂY TREO (Bám sát trần máy ở Y = 3.6)
+	// Vẽ trụ tròn chính của càng gắp
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture_kim);
     glPushMatrix();
@@ -279,7 +283,7 @@ void drawClaw() {
     gluCylinder(quad, 0.015f, 0.015f, 3.6f - clawPosition.y, 16, 16);
     glPopMatrix();
 
-    // 2. CỦ GẮP TRUNG TÂM
+    // Vẽ phần đầu trụ tròn của càng gắp
     glPushMatrix();
     glRotatef(90, 1, 0, 0);
     glTranslatef(0.0f, 0.0f, -0.12f);
@@ -289,106 +293,88 @@ void drawClaw() {
     gluDisk(quad, 0.0f, 0.22f, 24, 1);
     glPopMatrix();
 
-    // 3. BA CÀNG GẮP ĐA KHỚP 
-    // Tinh chỉnh công thức động học: Khớp trên xòe rộng tối đa, các khớp dưới giữ phom móc ôm gấu
-    float upperArmAngle = -20.0f - (clawOpenAngle * 1.4f); // Tăng hệ số mở (1.4f) để ngàm giang rộng ra hơn hẳn
-    float midArmAngle = 50.0f - (clawOpenAngle * 0.25f); // Khớp giữa mở nhẹ, phom vẫn chúi vào trong tâm
-    float tipArmAngle = 60.0f - (clawOpenAngle * 0.05f); // Móng vuốt giữ nguyên góc cụp sâu tạo phom "móc câu" bám gấu
+	// Tính toán góc xoay cho từng khớp cánh càng gắp dựa trên góc mở của càng gắp (clawOpenAngle)
+    float upperArmAngle = -20.0f - (clawOpenAngle * 1.4f);
+    float midArmAngle = 50.0f - (clawOpenAngle * 0.25f);
+    float tipArmAngle = 60.0f - (clawOpenAngle * 0.05f);
 
+    // VẼ 3 CÁNH CÀNG GẮP XUNG QUANH TRỤC GIỮA
     for (int i = 0; i < 3; i++) {
         glPushMatrix();
         glRotatef(i * 120.0f, 0.0f, 1.0f, 0.0f);
-
         glTranslatef(0.18f, -0.1f, 0.0f);
 
-        // --- ĐOẠN 1: Cánh tay trên ---
+		// VẼ CÁNH CÀNG 1
         glRotatef(upperArmAngle, 0.0f, 0.0f, 1.0f);
-
-        // Quả cầu Khớp nối 1 (che khe hở giữa củ gắp và cánh tay)
         glDisable(GL_TEXTURE_2D);
         glColor3f(0.5f, 0.5f, 0.5f);
         glutSolidSphere(0.055f, 16, 16);
-
         glColor3f(0.85f, 0.85f, 0.85f);
         drawSolidBox(0.0f, -0.15f, 0.0f, 0.05f, 0.3f, 0.05f);
         glTranslatef(0.0f, -0.3f, 0.0f);
 
-        // --- ĐOẠN 2: Khớp giữa ---
+        // VẼ CÁNH CÀNG 2
         glRotatef(midArmAngle, 0.0f, 0.0f, 1.0f);
-
-        // Quả cầu Khớp nối 2 (che khe hở khi gập tay)
         glColor3f(0.55f, 0.55f, 0.55f);
         glutSolidSphere(0.05f, 16, 16);
-
         glColor3f(0.75f, 0.75f, 0.75f);
         drawSolidBox(0.0f, -0.125f, 0.0f, 0.045f, 0.25f, 0.045f);
         glTranslatef(0.0f, -0.25f, 0.0f);
 
-        // --- ĐOẠN 3: Móng vuốt bám ---
+        // VẼ CÁNH CÀNG 3
         glRotatef(tipArmAngle, 0.0f, 0.0f, 1.0f);
-
-        // Quả cầu Khớp nối 3
         glColor3f(0.6f, 0.6f, 0.6f);
         glutSolidSphere(0.045f, 16, 16);
-
         glColor3f(0.65f, 0.65f, 0.65f);
         drawSolidBox(0.0f, -0.1f, 0.0f, 0.04f, 0.2f, 0.04f);
         glTranslatef(0.0f, -0.2f, 0.0f);
-
-        // Đầu mút bọc silicon bảo vệ
+        
+        // VẼ ĐẦU MÓNG CÀNG GẮP
         glColor3f(0.0f, 0.55f, 1.0f);
         glutSolidSphere(0.045f, 12, 12);
-
         glEnable(GL_TEXTURE_2D);
         glPopMatrix();
     }
-
+    // Khôi phục trạng thái render cho các phần tử khác trong cảnh vật
     glPopMatrix();
     glColor3f(1.0f, 1.0f, 1.0f);
     gluDeleteQuadric(quad);
 }
 
-// Hàm vẽ tấm kính phẳng với hiệu ứng trong suốt
-void drawGlassPanel(float tx, float ty, float tz, float sx, float sy, float sz)
-{
+// HÀM VẼ TẤM KÍNH BẢO VỆ TRONG SUỐT XUNG QUANH MÁY GẮP, ĐƯỢC THIẾT KẾ ĐỂ TẠO RA HIỆU ỨNG TRONG SUỐT VÀ CHỊU TÁC ĐỘNG CỦA ÁNH SÁNG, GIÚP NHÌN RÕ RÀNG GẤU BÔNG BÊN TRONG MÁY GẮP
+void drawGlassPanel(float tx, float ty, float tz, float sx, float sy, float sz) {
     glPushMatrix();
     glTranslatef(tx, ty, tz);
     glScalef(sx, sy, sz);
     glBegin(GL_QUADS);
     glNormal3f(0, 0, 1);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glVertex3f(-0.5f, -0.5f, 0.5f); glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, 0.5f, 0.5f);   glVertex3f(-0.5f, 0.5f, 0.5f);
     glEnd();
     glPopMatrix();
 }
 
-// Hàm vẽ lớp kính bảo vệ bao quanh máy gắp
-void drawMachineGlass()
-{
+void drawMachineGlass() {
     glDisable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
     glDisable(GL_LIGHTING);
 
+	// Màu kính bảo vệ trong suốt để nhìn rõ gấu bông bên trong
     glColor4f(0.78f, 0.93f, 1.0f, 0.22f);
     float glassWidth = 3.44f;
     float glassDepth = 1.72f;
     float glassY = 1.55f;
     float glassH = 4.1f;
 
-    // FRONT
+    // Vẽ 4 tấm kính bảo vệ xung quanh máy gắp
     drawGlassPanel(0.0f, glassY, glassDepth, glassWidth, glassH, 0.01f);
-    // BACK
     glPushMatrix(); glRotatef(180, 0, 1, 0); drawGlassPanel(0.0f, glassY, glassDepth, glassWidth, glassH, 0.01f); glPopMatrix();
-    // LEFT
     glPushMatrix(); glRotatef(-90, 0, 1, 0); drawGlassPanel(0.0f, glassY, glassDepth, glassWidth, glassH, 0.01f); glPopMatrix();
-    // RIGHT
-    glPushMatrix(); glRotatef(90, 0, 1, 0); drawGlassPanel(0.0f, glassY, glassDepth, glassWidth, glassH, 0.01f); glPopMatrix();
+    glPushMatrix(); glRotatef(90, 0, 1, 0);  drawGlassPanel(0.0f, glassY, glassDepth, glassWidth, glassH, 0.01f); glPopMatrix();
 
-    // Khung viền phản sáng mảnh mai
+    // Vẽ khung dây viền xung quanh tấm kính bảo vệ
     glLineWidth(2.0f);
     glColor4f(1.0f, 1.0f, 1.0f, 0.4f);
     glPushMatrix();
@@ -397,6 +383,7 @@ void drawMachineGlass()
     glutWireCube(1.0f);
     glPopMatrix();
 
+	// KHÔI PHỤC TRẠNG THÁI RENDER CHO CÁC PHẦN TỬ KHÁC TRONG CẢNH VẬT
     glEnable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     glDisable(GL_BLEND);
@@ -404,7 +391,7 @@ void drawMachineGlass()
     glColor3f(1, 1, 1);
 }
 
-// Hàm vẽ mô hình gấu bông Labubu
+// HÀM VẼ GẤU BÔNG
 void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY) {
     GLUquadric* quad = gluNewQuadric();
     gluQuadricTexture(quad, GL_TRUE);
@@ -413,20 +400,21 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY) {
     glTranslatef(x, y, z);
     glRotatef(rotateY, 0, 1, 0);
 
-    // Tạo khối chất liệu lông đặc trưng
+    // VẼ THÂN GẤU BÔNG
     glBindTexture(GL_TEXTURE_2D, furTexture);
     glPushMatrix(); glScalef(0.7f, 0.65f, 0.7f); gluSphere(quad, 0.5f, 30, 30); glPopMatrix();
     glPushMatrix(); glTranslatef(0.0f, 0.45f, 0.0f); gluSphere(quad, 0.45f, 30, 30); glPopMatrix();
     glPushMatrix(); glTranslatef(-0.23f, 0.8f, 0.0f); gluSphere(quad, 0.18f, 20, 20); glPopMatrix();
     glPushMatrix(); glTranslatef(0.23f, 0.8f, 0.0f); gluSphere(quad, 0.18f, 20, 20); glPopMatrix();
 
-    // Đôi mắt đen láy tương phản dễ thương
+	// VẼ MẮT GẤU BÔNG
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_LIGHTING);
     glColor3f(0.08f, 0.08f, 0.08f);
     glPushMatrix(); glTranslatef(-0.12f, 0.48f, 0.38f); glutSolidSphere(0.04f, 15, 15); glPopMatrix();
     glPushMatrix(); glTranslatef(0.12f, 0.48f, 0.38f); glutSolidSphere(0.04f, 15, 15); glPopMatrix();
 
+    // VẼ MŨI MẶT GẤU BÔNG
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -434,11 +422,11 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY) {
     gluDeleteQuadric(quad);
 }
 
-// Thiết kế không gian nền phòng giả lập
+// HÀM VẼ NỀN SAO TRỜI VÀ CÁC BỨC TƯỜNG XUNG QUANH MÁY GẮP, TẠO KHÔNG GIAN SÂU VÀ TRỰC QUAN NHÌN RÕ RÀNG CHO TOÀN BỘ CẢNH VẬT
 void drawBackground() {
     glDisable(GL_LIGHTING);
 
-    // 1. Tường chính diện phía sau
+	// Vẽ nền sao trời phía sau máy gắp
     glBindTexture(GL_TEXTURE_2D, texture_suoisao);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-25.0f, -15.0f, -25.0f);
@@ -447,7 +435,7 @@ void drawBackground() {
     glTexCoord2f(0.0f, 1.0f); glVertex3f(-25.0f, 35.0f, -25.0f);
     glEnd();
 
-    // 2. Sàn phòng (Mây)
+	// Vẽ nền sao trời phía trước máy gắp
     glBindTexture(GL_TEXTURE_2D, texture_may);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-25.0f, -4.9f, 25.0f);
@@ -456,7 +444,7 @@ void drawBackground() {
     glTexCoord2f(0.0f, 1.0f); glVertex3f(-25.0f, -4.9f, -25.0f);
     glEnd();
 
-    // 3. Tường bên trái
+	// Vẽ bức tường sao trời bên trái
     glBindTexture(GL_TEXTURE_2D, texture_suoisao);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-25.0f, -15.0f, 25.0f);
@@ -465,7 +453,7 @@ void drawBackground() {
     glTexCoord2f(0.0f, 1.0f); glVertex3f(-25.0f, 35.0f, 25.0f);
     glEnd();
 
-    // 4. Tường bên phải
+	// Vẽ bức tường sao trời bên phải
     glBindTexture(GL_TEXTURE_2D, texture_suoisao);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(25.0f, -15.0f, -25.0f);
@@ -477,43 +465,27 @@ void drawBackground() {
     glEnable(GL_LIGHTING);
 }
 
-// Hàm render scene chính điều phối thứ tự vẽ
+// HÀM CHÍNH THỰC HIỆN VẼ
 void renderScene() {
     drawBackground();
     drawMachineBody();
     drawClaw();
+
+    // GỌI HÀM VẼ LỖ RƠI DUY NHẤT ĐÃ ĐƯỢC TỐI ƯU TOẠ ĐỘ ĐỘNG THEO DROP_ZONE
     drawDropHole();
 
-    // Vẽ gấu
+    // Thực hiện vẽ danh sách gấu bông Labubu trong máy hoặc đã lăn ra ngoài hàng đợi
     GLuint furTextures[5] = { texture_longxam, texture_longxanhduong, texture_longxanhla, texture_longkem, texture_longhong };
     for (int i = 0; i < TOY_COUNT; i++) {
         if (!listToys[i].isActive) continue;
         drawLabubu(listToys[i].position.x, listToys[i].position.y, listToys[i].position.z, furTextures[i % 5], (float)(i * 25));
     }
 
-    // ===== PHẦN LỖ RƠI GẤU NỔI BẬT NỐI LIỀN CỬA SẬP =====
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texture_saosang);
-    glPushMatrix();
-    glTranslatef(-1.1f, 0.0f, 1.1f); // Trục trung tâm của hố
+    // ĐÃ XOÁ TOÀN BỘ ĐOẠN VẼ HỘP HỐ CỨ CỐ ĐỊNH Ở ĐÂY GÂY LỖI TRÙNG LẮP VÀ SAI LỆCH KHÔNG GIAN
 
-    // Đáy hố sâu
-    drawBox(texture_saosang, 0.0f, -1.0f, 0.0f, 1.0f, 0.01f, 1.0f);
-
-    // Thành hố đi thẳng từ mép bệ (Y=-0.5) xuống sát đáy (Y=-1.0) => Tâm tại Y=-0.75, cao 0.5
-    drawBox(texture_saosang, 0.0f, -0.75f, -0.5f, 1.0f, 0.5f, 0.02f);
-    drawBox(texture_saosang, 0.0f, -0.75f, 0.5f, 1.0f, 0.5f, 0.02f);
-    drawBox(texture_saosang, -0.5f, -0.75f, 0.0f, 0.02f, 0.5f, 1.0f);
-    drawBox(texture_saosang, 0.5f, -0.75f, 0.0f, 0.02f, 0.5f, 1.0f);
-    glPopMatrix();
-
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    // Kính bảo vệ lớp ngoài cùng tối ưu độ trong suốt khi trộn tầng màu blending depth mask
     drawMachineGlass();
 }
-
-// Thiết lập nguồn sáng
+// HÀM THIẾT LẬP HỆ THỐNG ÁNH SÁNG CHO CẢ CẢNH VÀ MÁY GẮP
 void setupLighting() {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -528,7 +500,7 @@ void setupLighting() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
 }
 
-// Khởi tạo đồ họa ban đầu và nạp tài nguyên hệ thống
+// HÀM KHỞI TẠO CÁC THAM SỐ ĐỒ HỌA VÀ TẢI TEXTURE CHO MÁY GẮP VÀ NỀN SAO TRỜI
 void initGraphics() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
@@ -537,17 +509,15 @@ void initGraphics() {
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-    // Nạp cấu trúc lông gấu bông Labubu
+    // Tải tất cả texture cần thiết cho máy gắp và nền sao trời
     texture_longxanhla = loadTexture("data/longxanhla.bmp");
     texture_longxanhduong = loadTexture("data/longxanhduong.bmp");
     texture_longxam = loadTexture("data/longxam.bmp");
     texture_longkem = loadTexture("data/longkem.bmp");
     texture_longhong = loadTexture("data/longhong.bmp");
 
-    // Thành phần vỏ máy cơ học và phụ kiện cơ bản
     texture_kim = loadTexture("data/kim.bmp");
 
-    // Bộ tài nguyên nền vũ trụ tinh vân chọn lọc sạch sẽ
     texture_saosang = loadTexture("data/saosang.bmp");
     texture_saoroi = loadTexture("data/saoroi.bmp");
     texture_osao = loadTexture("data/osao.bmp");
@@ -556,14 +526,16 @@ void initGraphics() {
     texture_nensao = loadTexture("data/nensao.bmp");
 
     glClearColor(0.72f, 0.72f, 0.82f, 1.0f);
-
+    
     setupLighting();
 
+	// Thiết lập ma trận chiếu để có góc nhìn rộng và tỷ lệ khung hình phù hợp
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0, 800.0 / 600.0, 1.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
 
+	// Bật chế độ tự động chuẩn hóa vector pháp tuyến để đảm bảo ánh sáng chính xác khi có phép biến đổi tỷ lệ
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);

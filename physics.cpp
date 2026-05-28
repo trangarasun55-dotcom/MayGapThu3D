@@ -13,31 +13,7 @@ const float LIMIT_MAX_Y = 3.2f;
 // Tâm của lỗ rơi gấu
 const Vec3 DROP_ZONE = { -1.1f, 3.2f, 1.1f };
 
-// Khởi tạo các giá trị biến extern
-const int TOY_COUNT = 12;
-Toy listToys[12];
-Vec3 clawPosition;
-float clawOpenAngle = 45.0f;
-int grabbedToyIndex = -1;
-ClawState currentClawState = STATE_IDLE;
-CameraMode currentCameraMode = CAMERA_PANORAMA;
-
-// Biến quản lý trạng thái camera
-float cameraAngleX = 0.0f;
-float cameraAngleY = 0.0f;
-float cameraDistance = 7.0f;
-
-// Biến quản lý trạng thái kéo thả chuột
-int lastMouseX = 0;
-int lastMouseY = 0;
-bool isDragging = false;
-
-// Biến quản lý trạng thái cửa xả gấu và đẩy gấu rơi
-float doorOpenAngle = 0.0f;
-bool isDoorOpening = false;
-int exitingToyIndex = -1;
-float toyExitProgress = 0.0f;
-int caughtToysCount = 0;
+int caughtToysCount = 0; // Biến đếm số lượng gấu đã gắp thành công
 
 void initPhysics() 
 {
@@ -115,13 +91,14 @@ void startGrabCycle()
     }
 }
 
+// Hàm cập nhật vật lý và trạng thái máy theo thời gian mỗi frame
 void updatePhysics(float deltaTime) {
     float moveSpeedY = 1.5f * deltaTime;
     float moveSpeedXZ = 1.0f * deltaTime;
     float rotateSpeed = 15.0f * deltaTime;
 
     switch (currentClawState) {
-    case STATE_LOWERING:
+    case STATE_LOWERING: // Giai đoạn hạ càng gắp xuống
         clawPosition.y -= moveSpeedY;
         if (clawPosition.y <= 1.0f) { // Chạm tới độ cao bám gấu phù hợp
             clawPosition.y = 1.0f;
@@ -129,7 +106,7 @@ void updatePhysics(float deltaTime) {
         }
         break;
 
-    case STATE_CLAMPING:
+    case STATE_CLAMPING: // Giai đoạn kẹp chặt càng gắp
         clawOpenAngle -= rotateSpeed * 4.0f;
         if (clawOpenAngle <= 0.0f) {
             clawOpenAngle = 0.0f;
@@ -137,42 +114,48 @@ void updatePhysics(float deltaTime) {
             if (grabbedToyIndex == -1) {
                 float minDistance = 0.55f; // Bán kính vợt gắp hiệu dụng
                 int targetIndex = -1;
-
-                for (int i = 0; i < TOY_COUNT; i++) {
-                    if (listToys[i].isActive) {
+                
+                for (int i = 0; i < TOY_COUNT; i++) 
+                {
+                    if (listToys[i].isActive) 
+                    {
+						// Tính khoảng cách từ càng gắp đến từng gấu để tìm gấu gần nhất trong bán kính hiệu dụng
                         float dx = clawPosition.x - listToys[i].position.x;
                         float dz = clawPosition.z - listToys[i].position.z;
                         float distXZ = sqrt(dx * dx + dz * dz);
-
-                        if (distXZ < minDistance) {
+                        
+                        if (distXZ < minDistance) 
+                        {
                             minDistance = distXZ;
                             targetIndex = i;
                         }
                     }
                 }
-
+                // Nếu tìm thấy gấu nào trong bán kính hiệu dụng, đánh dấu là đã gắp được
                 if (targetIndex != -1) {
                     grabbedToyIndex = targetIndex;
                     listToys[targetIndex].isGrabbed = true;
                 }
             }
-            currentClawState = STATE_LIFTING;
+            currentClawState = STATE_LIFTING; // Bắt đầu nâng càng gắp lên sau khi đã kẹp chặt
         }
         break;
 
-    case STATE_LIFTING:
+    case STATE_LIFTING: // Giai đoạn nâng càng gắp lên
         clawPosition.y += moveSpeedY;
-        if (clawPosition.y >= LIMIT_MAX_Y) {
+        if (clawPosition.y >= LIMIT_MAX_Y) 
+        {
             clawPosition.y = LIMIT_MAX_Y;
             currentClawState = STATE_RETURNING;
         }
         break;
 
-    case STATE_RETURNING: {
+	case STATE_RETURNING: // Giai đoạn di chuyển càng gắp về vị trí rơi gấu
+    {
         float dirX = DROP_ZONE.x - clawPosition.x;
         float dirZ = DROP_ZONE.z - clawPosition.z;
         float dist = sqrt(dirX * dirX + dirZ * dirZ);
-
+		// Nếu đã gần tới vị trí rơi gấu, đặt thẳng vào tâm và chuyển sang trạng thái thả gấu
         if (dist < 0.1f) {
             clawPosition.x = DROP_ZONE.x;
             clawPosition.z = DROP_ZONE.z;
@@ -185,12 +168,14 @@ void updatePhysics(float deltaTime) {
         break;
     }
 
-    case STATE_DROPPING:
+	case STATE_DROPPING: // Giai đoạn thả gấu ra ngoài
         clawOpenAngle += rotateSpeed * 3.0f;
-        if (clawOpenAngle >= 45.0f) {
+        if (clawOpenAngle >= 45.0f)
+        {
             clawOpenAngle = 45.0f;
 
-            if (grabbedToyIndex != -1) {
+            if (grabbedToyIndex != -1) 
+            {
                 exitingToyIndex = grabbedToyIndex;
                 listToys[exitingToyIndex].isGrabbed = false;
                 grabbedToyIndex = -1;
@@ -204,7 +189,7 @@ void updatePhysics(float deltaTime) {
         }
         break;
 
-    case STATE_IDLE:
+    case STATE_IDLE: // Trạng thái chờ sẵn sàng
     default:
         break;
     }
@@ -219,9 +204,11 @@ void updatePhysics(float deltaTime) {
     // =================================================================
     // LOGIC RƠI GẤU XUYÊN QUA CỬA SẬP VÀ LĂN RA 2 BÊN PHÍA TRƯỚC MÁY
     // =================================================================
-    if (isDoorOpening && exitingToyIndex != -1) {
+    if (isDoorOpening && exitingToyIndex != -1) 
+    {
         // Hoạt ảnh mở mượt cửa sập mặt trước máy
-        if (doorOpenAngle > -60.0f) {
+        if (doorOpenAngle > -60.0f) 
+        {
             doorOpenAngle -= 140.0f * deltaTime;
             if (doorOpenAngle < -60.0f) doorOpenAngle = -60.0f;
         }

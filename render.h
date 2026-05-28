@@ -3,16 +3,12 @@
 
 #include <glut.h>
 
-// Khởi tạo các thông số đồ họa, ánh sáng và load textures
-void initGraphics();
-
-// Hàm vẽ chính (gọi trong display callback)
-void renderScene();
-
-// Các hàm vẽ thành phần (có thể gọi từ ngoài nếu cần test riêng)
-void drawMachineBody();
-void drawClaw();
-void drawBackground();
-void drawMachineGlass();
+void initGraphics(); // Hàm khởi tạo đồ họa
+void renderScene(); // Hàm vẽ toàn bộ cảnh, bao gồm máy gắp và nền
+void drawMachineBody(); // Hàm vẽ thân máy gắp
+void drawClaw(); // Hàm vẽ càng gắp
+void drawBackground(); // Hàm vẽ nền
+void drawMachineGlass(); // Hàm vẽ kính máy gắp
+void drawDropHole(); // Hàm vẽ lỗ rơi
 
 #endif // RENDER_H
