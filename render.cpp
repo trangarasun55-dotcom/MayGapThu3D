@@ -10,7 +10,7 @@ GLuint texture_bac, texture_hong_pastel, texture_kem, texture_xanh_mint;
 GLuint texture_kim, texture_vang;
 GLuint texture_longxam, texture_longxanhduong, texture_longxanhla, texture_longhong, texture_longkem;
 GLuint texture_ngoclam, texture_pink;
-GLuint texture_osao;
+GLuint texture_osao, texture_suoisao;
 GLuint texture_nensao, texture_saosang, texture_saotoi, texture_saoroi;
 
 // Hàm tải texture
@@ -93,15 +93,15 @@ void drawMachineBody() {
     drawBox(texture_osao, 0.0f, -2.0f, 0.0f, 3.5f, 2.8f, 3.5f);
     drawBox(texture_osao, 0.0f, 3.9f, 0.0f, 3.55f, 0.8f, 3.55f);
 
-    // 2. Khung viền cửa nhận quà - ĐƯA VỀ CHÍNH GIỮA MẶT TRƯỚC
-    drawBox(texture_kim, 0.0f, -2.2f, 1.76f, 1.2f, 1.2f, 0.06f);
+    // 2. Khung viền cửa nhận quà
+    drawBox(texture_ngoclam, 0.0f, -2.2f, 1.76f, 1.2f, 1.2f, 0.06f);
 
     // Cánh cửa sập động xoay quanh bản lề
     glBindTexture(GL_TEXTURE_2D, texture_nensao);
     glPushMatrix();
     glTranslatef(0.0f, -1.6f, 1.79f);
     glRotatef(doorOpenAngle, 1.0f, 0.0f, 0.0f);
-    drawBox(0, 0.0f, -0.45f, 0.0f, 0.9f, 0.9f, 0.04f); // Cánh cửa hạ tâm xuống dưới bản lề
+    drawBox(texture_nensao, 0.0f, -0.45f, 0.0f, 0.9f, 0.9f, 0.04f); // Cánh cửa hạ tâm xuống dưới bản lề
 
     // Núm tay cầm cửa
     glBindTexture(GL_TEXTURE_2D, texture_pink);
@@ -127,7 +127,7 @@ void drawMachineBody() {
 
     // 4. Khối chạy trên trần & Bệ điều khiển
     drawBox(texture_ngoclam, clawPosition.x, 3.7f, clawPosition.z, 0.7f, 0.25f, 0.7f);
-    drawBox(texture_saotoi, 0.0f, -0.5f, 1.9f, 1.5f, 0.5f, 0.8f);
+    drawBox(texture_saosang, 0.0f, -0.5f, 1.9f, 1.5f, 0.5f, 0.8f);
 
     // 5. Hệ thống đèn và nút bấm trên bệ điều khiển
     drawBox(texture_ngoclam, -0.3f, -0.2f, 2.2f, 0.24f, 0.24f, 0.24f); // Đế đèn đổi khối vuông tóm gọn
@@ -164,7 +164,7 @@ void drawClaw() {
     glTranslatef(clawPosition.x, clawPosition.y, clawPosition.z);
 
     // Dây treo trục dọc
-    glBindTexture(GL_TEXTURE_2D, texture_bac);
+    glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
     glPushMatrix();
     glTranslatef(0.0f, 3.4f - clawPosition.y, 0.0f);
     glRotatef(90, 1, 0, 0);
@@ -222,7 +222,7 @@ void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY) {
 
 // Hàm vẽ giỏ đựng gấu 
 void drawBasket() {
-    glBindTexture(GL_TEXTURE_2D, texture_ngoclam);
+    glBindTexture(GL_TEXTURE_2D, texture_saosang);
     glPushMatrix();
 
     // Giỏ đặt ở trục giữa mặt trước, hạ thấp hẳn xuống nền và đẩy tiến về phía camera
@@ -254,7 +254,7 @@ void drawBackground() {
     glEnd();
 
     // 2. Sàn phòng
-    glBindTexture(GL_TEXTURE_2D, texture_saosang);
+    glBindTexture(GL_TEXTURE_2D, texture_suoisao);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-25.0f, -4.9f, 15.0f);
     glTexCoord2f(2.0f, 0.0f); glVertex3f(25.0f, -4.9f, 15.0f);
@@ -367,6 +367,7 @@ void initGraphics() {
     texture_saotoi = loadTexture("data/saotoi.bmp");
     texture_saoroi = loadTexture("data/saoroi.bmp");
     texture_osao = loadTexture("data/osao.bmp");
+	texture_suoisao = loadTexture("data/suoisao.bmp");
 
     glClearColor(0.98f, 0.96f, 0.89f, 1.0f);
 
