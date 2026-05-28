@@ -85,7 +85,7 @@ int main(int argc, char** argv)
         GLUT_RGB |
         GLUT_DEPTH);
 
-    glutInitWindowSize(900, 900);
+    glutInitWindowSize(1200,780);
 
     glutCreateWindow("May Gap Thu 3D");
 
