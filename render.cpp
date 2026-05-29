@@ -283,14 +283,37 @@ void drawDropHole() {
 // HÀM VẼ CÀNG GẮP
 void drawClaw() {
     GLUquadric* quad = gluNewQuadric();
-    gluQuadricTexture(quad, GL_TRUE);
-    
+    gluQuadricTexture(quad, GL_TRUE); // Bật toạ độ texture cho các hàm GLU
+
     glPushMatrix();
     glTranslatef(clawPosition.x, clawPosition.y, clawPosition.z);
 
-	// Vẽ trụ tròn chính của càng gắp
+    // =====================================================================
+    // 1. TĂNG CƯỜNG VẬT LIỆU KIM LOẠI (Tăng độ tương phản ánh sáng)
+    // =====================================================================
+    GLfloat mat_ambient[] = { 0.4f, 0.4f, 0.4f, 1.0f };
+    GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat mat_shininess[] = { 128.0f }; // Đẩy độ bóng lên mức tối đa của OpenGL (128)
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture_kim);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // =====================================================================
+    // 2. [QUAN TRỌNG] BẬT SPHERE MAPPING ĐỂ TẠO HIỆU ỨNG PHẢN GƯƠNG
+    // =====================================================================
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
+    // Vẽ trụ tròn chính của càng gắp
     glPushMatrix();
     glTranslatef(0.0f, 3.6f - clawPosition.y, 0.0f);
     glRotatef(90, 1, 0, 0);
@@ -307,7 +330,7 @@ void drawClaw() {
     gluDisk(quad, 0.0f, 0.22f, 24, 1);
     glPopMatrix();
 
-	// Tính toán góc xoay cho từng khớp cánh càng gắp dựa trên góc mở của càng gắp (clawOpenAngle)
+    // Tính toán góc xoay cho từng khớp cánh càng gắp
     float upperArmAngle = -20.0f - (clawOpenAngle * 1.4f);
     float midArmAngle = 50.0f - (clawOpenAngle * 0.25f);
     float tipArmAngle = 60.0f - (clawOpenAngle * 0.05f);
@@ -318,38 +341,46 @@ void drawClaw() {
         glRotatef(i * 120.0f, 0.0f, 1.0f, 0.0f);
         glTranslatef(0.18f, -0.1f, 0.0f);
 
-		// VẼ CÁNH CÀNG 1
+        // VẼ CÁNH CÀNG 1
         glRotatef(upperArmAngle, 0.0f, 0.0f, 1.0f);
-        glDisable(GL_TEXTURE_2D);
-        glColor3f(0.5f, 0.5f, 0.5f);
-        glutSolidSphere(0.055f, 16, 16);
-        glColor3f(0.85f, 0.85f, 0.85f);
-        drawSolidBox(0.0f, -0.15f, 0.0f, 0.05f, 0.3f, 0.05f);
+        gluSphere(quad, 0.055f, 16, 16);
+        drawBox(texture_kim, 0.0f, -0.15f, 0.0f, 0.05f, 0.3f, 0.05f);
         glTranslatef(0.0f, -0.3f, 0.0f);
 
         // VẼ CÁNH CÀNG 2
         glRotatef(midArmAngle, 0.0f, 0.0f, 1.0f);
-        glColor3f(0.55f, 0.55f, 0.55f);
-        glutSolidSphere(0.05f, 16, 16);
-        glColor3f(0.75f, 0.75f, 0.75f);
-        drawSolidBox(0.0f, -0.125f, 0.0f, 0.045f, 0.25f, 0.045f);
+        gluSphere(quad, 0.05f, 16, 16);
+        drawBox(texture_kim, 0.0f, -0.125f, 0.0f, 0.045f, 0.25f, 0.045f);
         glTranslatef(0.0f, -0.25f, 0.0f);
 
         // VẼ CÁNH CÀNG 3
         glRotatef(tipArmAngle, 0.0f, 0.0f, 1.0f);
-        glColor3f(0.6f, 0.6f, 0.6f);
-        glutSolidSphere(0.045f, 16, 16);
-        glColor3f(0.65f, 0.65f, 0.65f);
-        drawSolidBox(0.0f, -0.1f, 0.0f, 0.04f, 0.2f, 0.04f);
+        gluSphere(quad, 0.045f, 16, 16);
+        drawBox(texture_kim, 0.0f, -0.1f, 0.0f, 0.04f, 0.2f, 0.04f);
         glTranslatef(0.0f, -0.2f, 0.0f);
-        
+
         // VẼ ĐẦU MÓNG CÀNG GẮP
-        glColor3f(0.0f, 0.55f, 1.0f);
-        glutSolidSphere(0.045f, 12, 12);
-        glEnable(GL_TEXTURE_2D);
+        gluSphere(quad, 0.045f, 12, 12);
+
         glPopMatrix();
     }
-    // Khôi phục trạng thái render cho các phần tử khác trong cảnh vật
+
+    // =====================================================================
+    // 3. TẮT SPHERE MAPPING VÀ RESET VẬT LIỆU
+    // =====================================================================
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+
+    // Trả lại vật liệu mặc định cho các object khác khỏi bị vạ lây
+    GLfloat default_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat default_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    GLfloat no_mat[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, default_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, default_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+    glMaterialfv(GL_FRONT, GL_SHININESS, no_mat);
+
     glPopMatrix();
     glColor3f(1.0f, 1.0f, 1.0f);
     gluDeleteQuadric(quad);
@@ -405,7 +436,6 @@ void drawMachineGlass() {
     glColor3f(1, 1, 1);
 }
 
-// HÀM VẼ GẤU BÔNG
 // HÀM VẼ GẤU BÔNG (hỗ trợ clipping khi chui qua cửa)
 void drawLabubu(float x, float y, float z, GLuint furTexture, float rotateY, bool isExiting = false) {
     GLUquadric* quad = gluNewQuadric();
@@ -579,6 +609,7 @@ void renderScene() {
 
     drawMachineGlass(); // 6. Vẽ kính trong suốt luôn luôn ở cuối cùng để xử lý Alpha nén chuẩn
 }
+
 // HÀM THIẾT LẬP HỆ THỐNG ÁNH SÁNG CHO CẢ CẢNH VÀ MÁY GẮP
 void setupLighting() {
     glEnable(GL_LIGHTING);
@@ -589,9 +620,15 @@ void setupLighting() {
     GLfloat ambientLight[] = { 0.75f, 0.75f, 0.8f, 1.0f };
     GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+    // [BỔ SUNG]: Thêm ánh sáng phản quang (Specular) để chiếu lên kim loại
+    GLfloat specularLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+
+	// [BỔ SUNG]: Thiết lập ánh sáng phản quang để tạo hiệu ứng sáng bóng trên các bề mặt kim loại của máy gắp
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
 }
 
 // HÀM KHỞI TẠO CÁC THAM SỐ ĐỒ HỌA VÀ TẢI TEXTURE CHO MÁY GẮP VÀ NỀN SAO TRỜI

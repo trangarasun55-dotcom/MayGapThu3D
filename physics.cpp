@@ -15,15 +15,16 @@ const Vec3 DROP_ZONE = { -1.1f, 3.2f, 1.1f };
 
 int caughtToysCount = 0; // Biến đếm số lượng gấu đã gắp thành công
 
+// Hàm khởi tạo trạng thái vật lý ban đầu của máy gắp và phân bố gấu bông trong lồng kính
 void initPhysics() 
 {
 	// Thiết lập vị trí ban đầu của càng gắp ở chính giữa lồng kính
     clawPosition = Vec3(0.0f, LIMIT_MAX_Y, 0.0f);
-    clawOpenAngle = 45.0f; // Mở rộng góc kẹp ban đầu
-	currentClawState = STATE_IDLE;
+    clawOpenAngle = 45.0f;              // Mở rộng góc kẹp ban đầu
+	    currentClawState = STATE_IDLE;
     grabbedToyIndex = -1;
     exitingToyIndex = -1;
-	toyExitProgress = 0.0f; // Đặt lại số lượng gấu đã gắp thành công
+	    toyExitProgress = 0.0f; // Đặt lại số lượng gấu đã gắp thành công
     caughtToysCount = 0;
     isDoorOpening = false;
     doorOpenAngle = 0.0f;
@@ -64,6 +65,7 @@ void initPhysics()
     }
 }
 
+// Hàm đặt lại trạng thái vật lý về ban đầu khi bắt đầu lại trò chơi hoặc reset
 void resetPhysics()
 {
     initPhysics();
@@ -100,46 +102,56 @@ void updatePhysics(float deltaTime) {
     switch (currentClawState) {
     case STATE_LOWERING: // Giai đoạn hạ càng gắp xuống
         clawPosition.y -= moveSpeedY;
-        if (clawPosition.y <= 1.0f) { // Chạm tới độ cao bám gấu phù hợp
-            clawPosition.y = 1.0f;
+
+        // Nâng độ cao dừng lại (từ 1.0f lên khoảng 1.45f) để trục giữa không đâm vào đầu gấu
+        if (clawPosition.y <= 1.45f) {
+            clawPosition.y = 1.45f;
+
+            // Kiểm tra xem có gấu trong tầm gắp không (trước khi kẹp)
+            float minDistance = 0.55f; // Bán kính vợt gắp hiệu dụng
+            int targetIndex = -1;
+
+            for (int i = 0; i < TOY_COUNT; i++) {
+                if (listToys[i].isActive) {
+                    float dx = clawPosition.x - listToys[i].position.x;
+                    float dz = clawPosition.z - listToys[i].position.z;
+                    float distXZ = sqrt(dx * dx + dz * dz);
+
+                    if (distXZ < minDistance) {
+                        minDistance = distXZ;
+                        targetIndex = i;
+                    }
+                }
+            }
+
+            // Nếu có gấu lọt vào tầm, lưu lại index để lát nữa tính góc kẹp
+            if (targetIndex != -1) {
+                grabbedToyIndex = targetIndex;
+            }
+
             currentClawState = STATE_CLAMPING;
         }
         break;
 
     case STATE_CLAMPING: // Giai đoạn kẹp chặt càng gắp
-        clawOpenAngle -= rotateSpeed * 4.0f;
-        if (clawOpenAngle <= 0.0f) {
-            clawOpenAngle = 0.0f;
+    {
+        // Nếu kẹp trúng gấu, góc kẹp dừng 35 độ. Nếu trượt, 22 độ.
+        float targetClampAngle = (grabbedToyIndex != -1) ? 35.0f : 22.0f;
 
-            if (grabbedToyIndex == -1) {
-                float minDistance = 0.55f; // Bán kính vợt gắp hiệu dụng
-                int targetIndex = -1;
-                
-                for (int i = 0; i < TOY_COUNT; i++) 
-                {
-                    if (listToys[i].isActive) 
-                    {
-						// Tính khoảng cách từ càng gắp đến từng gấu để tìm gấu gần nhất trong bán kính hiệu dụng
-                        float dx = clawPosition.x - listToys[i].position.x;
-                        float dz = clawPosition.z - listToys[i].position.z;
-                        float distXZ = sqrt(dx * dx + dz * dz);
-                        
-                        if (distXZ < minDistance) 
-                        {
-                            minDistance = distXZ;
-                            targetIndex = i;
-                        }
-                    }
-                }
-                // Nếu tìm thấy gấu nào trong bán kính hiệu dụng, đánh dấu là đã gắp được
-                if (targetIndex != -1) {
-                    grabbedToyIndex = targetIndex;
-                    listToys[targetIndex].isGrabbed = true;
-                }
+        clawOpenAngle -= rotateSpeed * 4.0f;
+
+        if (clawOpenAngle <= targetClampAngle) {
+            clawOpenAngle = targetClampAngle;
+
+            // Nếu đã xác định trúng gấu từ bước trước, cập nhật trạng thái của gấu
+            if (grabbedToyIndex != -1) {
+                listToys[grabbedToyIndex].isGrabbed = true;
             }
-            currentClawState = STATE_LIFTING; // Bắt đầu nâng càng gắp lên sau khi đã kẹp chặt
+
+            currentClawState = STATE_LIFTING; // Bắt đầu nâng càng gắp lên
         }
-        break;
+    }
+    break;
 
     case STATE_LIFTING: // Giai đoạn nâng càng gắp lên
         clawPosition.y += moveSpeedY;
@@ -197,7 +209,7 @@ void updatePhysics(float deltaTime) {
     // Gấu bám dính di chuyển theo càng gắp (Chỉ chạy khi gấu đang bị gắp thực sự trên không)
     if (grabbedToyIndex != -1) {
         listToys[grabbedToyIndex].position.x = clawPosition.x;
-        listToys[grabbedToyIndex].position.y = clawPosition.y - 1.2f;
+        listToys[grabbedToyIndex].position.y = clawPosition.y - 1.55f;
         listToys[grabbedToyIndex].position.z = clawPosition.z;
     }
 
