@@ -6,10 +6,10 @@
 #include "imageloader.h"
 
 // BIẾN LƯU ID CỦA CÁC TEXTURE ĐƯỢC SỬ DỤNG TRONG CẢNH VẬT
-GLuint texture_osao, texture_may, texture_suoisao;
+GLuint texture_nensao, texture_saosang, texture_saoroi, texture_suoisao;
 GLuint texture_kim;
 GLuint texture_longxam, texture_longxanhduong, texture_longxanhla, texture_longhong, texture_longkem;
-GLuint texture_saosang, texture_saoroi, texture_nensao;
+GLuint texture_may, texture_maysao;
 
 // HÀM TẢI TEXTURE TỪ FILE BMP VÀ TRẢ VỀ ID CỦA TEXTURE ĐỂ SỬ DỤNG TRONG OPENGL
 GLuint loadTexture(const char* filename) {
@@ -183,10 +183,10 @@ void drawControlPanel() {
 // HÀM VẼ THÂN MÁY GẮP, BAO GỒM THÂN VỎ CHÍNH, MÁI CHE, CỘT TRỤ ĐỨNG 4 GÓC, BÀN ĐIỀU KHIỂN VÀ HỆ THỐNG CỬA SẬP XẢ QUÀ CHÍNH GIỮA MẶT TRƯỚC THÂN MÁY
 void drawMachineBody() {
     // Thân vỏ bên dưới máy
-    drawRoundedBox(texture_osao, 0.0f, -2.1f, 0.0f, 3.5f, 3.2f, 3.5f);
+    drawRoundedBox(texture_nensao, 0.0f, -2.1f, 0.0f, 3.5f, 3.2f, 3.5f);
 
     // Mái máy che bên trên lồng
-    drawRoundedBox(texture_osao, 0.0f, 4.0f, 0.0f, 3.5f, 0.8f, 3.5f);
+    drawRoundedBox(texture_nensao, 0.0f, 4.0f, 0.0f, 3.5f, 0.8f, 3.5f);
 
 	// Cột trụ đứng 4 góc xung quanh thân máy
     float pO = 1.6f;
@@ -218,7 +218,7 @@ void drawMachineBody() {
 
     // 3. Tịnh tiến ngược lên một nửa chiều cao tấm cửa để định tâm vẽ khối hộp chuẩn
     // Vì cửa cao 1.4f, tâm hình học của nó sẽ cách bản lề đáy một khoảng Y = +0.7f
-    drawRoundedBox(texture_saosang, 0.0f, 0.7f, 0.0f, 1.4f, 1.4f, 0.05f);
+    drawRoundedBox(texture_maysao, 0.0f, 0.7f, 0.0f, 1.4f, 1.4f, 0.05f);
 
     // Vẽ tay nắm cửa xả ở phía trên đầu tấm cửa (cách đáy bản lề Y = 1.2f)
     drawRoundedBox(texture_kim, 0.0f, 1.2f, 0.05f, 0.6f, 0.1f, 0.08f);
@@ -533,9 +533,9 @@ void drawBackground() {
     glEnd();
 
     // =========================================================================
-    // 4 MẶT TƯỜNG XUNG QUANH MÁY - Đều sử dụng texture_suoisao
+    // 4 MẶT TƯỜNG XUNG QUANH MÁY - Đều sử dụng texture_maysao
     // =========================================================================
-    glBindTexture(GL_TEXTURE_2D, texture_suoisao);
+    glBindTexture(GL_TEXTURE_2D, texture_maysao);
     glBegin(GL_QUADS);
 
     // MẶT 1: TƯỜNG PHÍA SAU MÁY (Trục -Z)
@@ -649,12 +649,12 @@ void initGraphics() {
 
     texture_kim = loadTexture("data/kim.bmp");
 
-    texture_saosang = loadTexture("data/saosang.bmp");
-    texture_saoroi = loadTexture("data/saoroi.bmp");
-    texture_osao = loadTexture("data/osao.bmp");
-    texture_may = loadTexture("data/may.bmp");
     texture_suoisao = loadTexture("data/suoisao.bmp");
+    texture_saoroi = loadTexture("data/saoroi.bmp");
     texture_nensao = loadTexture("data/nensao.bmp");
+
+    texture_may = loadTexture("data/may.bmp");
+    texture_maysao = loadTexture("data/maysao.bmp");
 
     glClearColor(0.72f, 0.72f, 0.82f, 1.0f);
     
