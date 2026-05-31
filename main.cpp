@@ -26,8 +26,8 @@ bool isDragging = false;
 const float DROP_HOLE_X = -1.2f;
 const float DROP_HOLE_Z = 1.2f;
 
-const int TOY_COUNT = 15; // Số lượng gấu trong lồng kính
-Toy listToys[TOY_COUNT]; 
+const int TOY_COUNT = 24; // Số lượng gấu trong lồng kính
+Toy listToys[TOY_COUNT];
 
 hmtoan::Vec3 clawPosition = { 0, 3.2f, 0 };
 float clawOpenAngle = 45.0f;
@@ -85,25 +85,25 @@ int main(int argc, char** argv)
         GLUT_RGB |
         GLUT_DEPTH);
 
-    glutInitWindowSize(1200,780);
+    glutInitWindowSize(1130, 780);
 
     glutCreateWindow("May Gap Thu 3D");
 
-	init(); // Hàm khởi tạo OpenGL và thiết lập trạng thái ban đầu
+    init(); // Hàm khởi tạo OpenGL và thiết lập trạng thái ban đầu
 
-	glutDisplayFunc(display); // Hàm vẽ lại toàn bộ cảnh mỗi khi có sự thay đổi
+    glutDisplayFunc(display); // Hàm vẽ lại toàn bộ cảnh mỗi khi có sự thay đổi
 
-	glutIdleFunc(idle); // Hàm cập nhật vật lý và trạng thái máy mỗi frame
+    glutIdleFunc(idle); // Hàm cập nhật vật lý và trạng thái máy mỗi frame
 
     glutKeyboardFunc(keyboard); // Hàm xử lý phím thườn
 
     glutSpecialFunc(specialKeyboard); // Hàm xử lý phím đặc biệt (các phím mũi tên)
 
-	glutMouseFunc(mouseButton); // Hàm xử lý sự kiện nhấn chuột
+    glutMouseFunc(mouseButton); // Hàm xử lý sự kiện nhấn chuột
 
-	glutMotionFunc(mouseMotion); // Hàm xử lý sự kiện di chuyển chuột khi đang nhấn giữ
+    glutMotionFunc(mouseMotion); // Hàm xử lý sự kiện di chuyển chuột khi đang nhấn giữ
 
-	glutMainLoop(); // Bắt đầu vòng lặp chính của GLUT
+    glutMainLoop(); // Bắt đầu vòng lặp chính của GLUT
 
     return 0;
 }

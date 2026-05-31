@@ -3,68 +3,91 @@
 #include <cstdlib>
 
 // Định nghĩa các hằng số cấu hình lồng kính
-const float LIMIT_MIN_X = -1.4f;
-const float LIMIT_MAX_X = 1.4f;
-const float LIMIT_MIN_Z = -1.4f;
-const float LIMIT_MAX_Z = 1.4f;
+const float LIMIT_MIN_X = -1.2f;
+const float LIMIT_MAX_X = 1.2f;
+const float LIMIT_MIN_Z = -1.2f;
+const float LIMIT_MAX_Z = 1.2f;
 const float LIMIT_MIN_Y = -0.25f; //gấu đứng đúng trên mặt sàn kính, không bị lún
 const float LIMIT_MAX_Y = 3.2f;
 
 // Tâm của lỗ rơi gấu
-const Vec3 DROP_ZONE = { -1.1f, 3.2f, 1.1f };
+const Vec3 DROP_ZONE = { -1.2f, 3.2f, 1.2f };
 
 int caughtToysCount = 0; // Biến đếm số lượng gấu đã gắp thành công
 
-// Hàm khởi tạo trạng thái vật lý ban đầu của máy gắp và phân bố gấu bông trong lồng kính
-void initPhysics() 
+// Hàm khởi tạo trạng thái vật lý ban đầu và phân bổ gấu bông theo ngẫu nhiên từng tầng
+void initPhysics()
 {
-	// Thiết lập vị trí ban đầu của càng gắp ở chính giữa lồng kính
     clawPosition = Vec3(0.0f, LIMIT_MAX_Y, 0.0f);
-    clawOpenAngle = 45.0f;              // Mở rộng góc kẹp ban đầu
-	    currentClawState = STATE_IDLE;
+    clawOpenAngle = 45.0f;
+    currentClawState = STATE_IDLE;
     grabbedToyIndex = -1;
     exitingToyIndex = -1;
-	    toyExitProgress = 0.0f; // Đặt lại số lượng gấu đã gắp thành công
     caughtToysCount = 0;
     isDoorOpening = false;
     doorOpenAngle = 0.0f;
 
-    // Vùng phân bố gấu an toàn
-    float safeMinX = -1.0f, safeMaxX = 1.0f;
-    float safeMinZ = -1.0f, safeMaxZ = 1.0f;
+    float safeMinX = -1.2f, safeMaxX = 1.2f;
+    float safeMinZ = -1.2f, safeMaxZ = 1.2f;
 
-    int cols = 4; // Chia lưới gấu phân bổ 4 cột cố định
     float stepX = (safeMaxX - safeMinX) / 3.0f;
     float stepZ = (safeMaxZ - safeMinZ) / 3.0f;
 
+    // 1. Khai báo mảng 15 ô hợp lệ trong 1 tầng (bỏ qua ô số 12 là lỗ rơi)
+    int validSlots[15] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15 };
+    int currentTier = 0;
+    int toysPlacedInTier = 0;
+
+    // Trộn ngẫu nhiên mảng vị trí cho tầng đầu tiên
+    for (int k = 0; k < 15; k++) {
+        int swapIdx = rand() % 15;
+        int temp = validSlots[k];
+        validSlots[k] = validSlots[swapIdx];
+        validSlots[swapIdx] = temp;
+    }
+
+    // 2. Phân bổ gấu
     for (int i = 0; i < TOY_COUNT; i++) {
         listToys[i].id = i;
         listToys[i].isGrabbed = false;
         listToys[i].isActive = true;
 
-        int row = i / cols;
-        int col = i % cols;
+        // Nếu tầng hiện tại đã đầy (15 con), chuyển lên tầng trên và trộn lại vị trí
+        if (toysPlacedInTier >= 15) {
+            currentTier++;
+            toysPlacedInTier = 0;
 
-        // Tạo độ lệch Jitter rất nhỏ để nhìn tự nhiên nhưng không bao giờ đè khuyết vào nhau
-        float offsetX = ((rand() % 100) / 100.0f - 0.5f) * 0.1f;
-        float offsetZ = ((rand() % 100) / 100.0f - 0.5f) * 0.1f;
-
-        float posX = safeMinX + col * stepX + offsetX;
-        float posZ = safeMinZ + row * stepZ + offsetZ;
-
-        // Nếu tọa độ trùng sát vào hố rơi gấu, đẩy nhẹ ra xa để không bị rơi tự do ngay lúc đầu game
-        float distToHole = sqrt(pow(posX - DROP_ZONE.x, 2) + pow(posZ - DROP_ZONE.z, 2));
-        if (distToHole < 0.5f) {
-            posX += 0.4f;
-            posZ -= 0.4f;
+            for (int k = 0; k < 15; k++) {
+                int swapIdx = rand() % 15;
+                int temp = validSlots[k];
+                validSlots[k] = validSlots[swapIdx];
+                validSlots[swapIdx] = temp;
+            }
         }
 
-        listToys[i].position.x = posX;
-        listToys[i].position.z = posZ;
-        listToys[i].position.y = LIMIT_MIN_Y; // Đáy gấu nằm khít trên mặt sàn
+        // Lấy ô ngẫu nhiên từ mảng đã trộn
+        int slotInTier = validSlots[toysPlacedInTier];
+        int row = slotInTier / 4;
+        int col = slotInTier % 4;
+
+        // Tọa độ tâm gốc của ô đó
+        float baseX = safeMinX + col * stepX;
+        float baseZ = safeMinZ + row * stepZ;
+
+        // 3. THÊM ĐỘ LỆCH NGẪU NHIÊN (JITTER)
+        float jitterX = ((rand() % 100) / 100.0f - 0.5f) * 0.02f;
+        float jitterZ = ((rand() % 100) / 100.0f - 0.5f) * 0.02f;
+
+        listToys[i].position.x = baseX + jitterX;
+        listToys[i].position.z = baseZ + jitterZ;
+
+        // Chiều cao vẫn lấp từ dưới lên trên
+        float stackHeightOffset = 1.15f;
+        listToys[i].position.y = LIMIT_MIN_Y + (currentTier * stackHeightOffset);
+
+        toysPlacedInTier++; // Tăng biến đếm số gấu trong tầng
     }
 }
-
 // Hàm đặt lại trạng thái vật lý về ban đầu khi bắt đầu lại trò chơi hoặc reset
 void resetPhysics()
 {
@@ -72,13 +95,13 @@ void resetPhysics()
 }
 
 // HÀM ĐIỀU KHIỂN CÀNG GẮP
-void moveClawManual(float dx, float dz) 
+void moveClawManual(float dx, float dz)
 {
     if (currentClawState != STATE_IDLE) return;
     clawPosition.x += dx;
     clawPosition.z += dz;
 
-	// Giới hạn vùng di chuyển của càng gắp trong lồng kính
+    // Giới hạn vùng di chuyển của càng gắp trong lồng kính
     if (clawPosition.x < LIMIT_MIN_X) clawPosition.x = LIMIT_MIN_X;
     if (clawPosition.x > LIMIT_MAX_X) clawPosition.x = LIMIT_MAX_X;
     if (clawPosition.z < LIMIT_MIN_Z) clawPosition.z = LIMIT_MIN_Z;
@@ -86,7 +109,7 @@ void moveClawManual(float dx, float dz)
 }
 
 // Hàm bắt đầu chu trình gắp tự động khi nhấn nút
-void startGrabCycle() 
+void startGrabCycle()
 {
     if (currentClawState == STATE_IDLE) {
         currentClawState = STATE_LOWERING;
@@ -101,37 +124,49 @@ void updatePhysics(float deltaTime) {
 
     switch (currentClawState) {
     case STATE_LOWERING: // Giai đoạn hạ càng gắp xuống
-        clawPosition.y -= moveSpeedY;
+    {
+        // 1. Quét tìm con gấu CAO NHẤT đang nằm ngay dưới càng gắp
+        float minDistance = 0.55f; // Bán kính vợt gắp hiệu dụng
+        int highestToyIndex = -1;
+        float highestToyY = LIMIT_MIN_Y - 1.0f; // Khởi tạo Y thấp hơn mặt sàn để dễ so sánh
 
-        // Nâng độ cao dừng lại (từ 1.0f lên khoảng 1.45f) để trục giữa không đâm vào đầu gấu
-        if (clawPosition.y <= 1.45f) {
-            clawPosition.y = 1.45f;
+        for (int i = 0; i < TOY_COUNT; i++) {
+            if (listToys[i].isActive) {
+                float dx = clawPosition.x - listToys[i].position.x;
+                float dz = clawPosition.z - listToys[i].position.z;
+                float distXZ = sqrt(dx * dx + dz * dz);
 
-            // Kiểm tra xem có gấu trong tầm gắp không (trước khi kẹp)
-            float minDistance = 0.55f; // Bán kính vợt gắp hiệu dụng
-            int targetIndex = -1;
-
-            for (int i = 0; i < TOY_COUNT; i++) {
-                if (listToys[i].isActive) {
-                    float dx = clawPosition.x - listToys[i].position.x;
-                    float dz = clawPosition.z - listToys[i].position.z;
-                    float distXZ = sqrt(dx * dx + dz * dz);
-
-                    if (distXZ < minDistance) {
-                        minDistance = distXZ;
-                        targetIndex = i;
-                    }
+                // Nếu gấu nằm trong vùng kẹp VÀ có độ cao lớn hơn gấu đã lưu
+                if (distXZ < minDistance && listToys[i].position.y > highestToyY) {
+                    highestToyY = listToys[i].position.y;
+                    highestToyIndex = i;
                 }
             }
+        }
 
-            // Nếu có gấu lọt vào tầm, lưu lại index để lát nữa tính góc kẹp
-            if (targetIndex != -1) {
-                grabbedToyIndex = targetIndex;
+        // 2. Tính toán độ cao dừng kẹp động (Dynamic Stop Height)
+        // Khoảng cách bù trừ từ tâm gấu lên trục càng gắp là 1.7f (tính từ code cũ: 1.45f - (-0.25f) = 1.7f)
+        float targetStopY = (highestToyIndex != -1) ? (highestToyY + 1.7f) : 1.45f;
+
+        // Tiếp tục hạ càng xuống
+        clawPosition.y -= moveSpeedY;
+
+        // 3. Dừng hạ càng ngay khi chạm tới đỉnh của con gấu cao nhất (hoặc chạm đáy nếu không có gấu)
+        if (clawPosition.y <= targetStopY) {
+            clawPosition.y = targetStopY;
+
+            // Chốt hạ mục tiêu là con gấu ở trên cùng
+            if (highestToyIndex != -1) {
+                grabbedToyIndex = highestToyIndex;
+            }
+            else {
+                grabbedToyIndex = -1; // Cắp trượt, không có gấu
             }
 
             currentClawState = STATE_CLAMPING;
         }
-        break;
+    }
+    break;
 
     case STATE_CLAMPING: // Giai đoạn kẹp chặt càng gắp
     {
@@ -155,20 +190,21 @@ void updatePhysics(float deltaTime) {
 
     case STATE_LIFTING: // Giai đoạn nâng càng gắp lên
         clawPosition.y += moveSpeedY;
-        if (clawPosition.y >= LIMIT_MAX_Y) 
+        if (clawPosition.y >= LIMIT_MAX_Y)
         {
             clawPosition.y = LIMIT_MAX_Y;
             currentClawState = STATE_RETURNING;
         }
         break;
 
-	case STATE_RETURNING: // Giai đoạn di chuyển càng gắp về vị trí rơi gấu
+    case STATE_RETURNING: // Giai đoạn di chuyển càng gắp về vị trí rơi gấu
     {
         float dirX = DROP_ZONE.x - clawPosition.x;
         float dirZ = DROP_ZONE.z - clawPosition.z;
         float dist = sqrt(dirX * dirX + dirZ * dirZ);
-		// Nếu đã gần tới vị trí rơi gấu, đặt thẳng vào tâm và chuyển sang trạng thái thả gấu
-        if (dist < 0.1f) {
+
+        // Nếu khoảng cách còn lại nhỏ hơn quãng đường đi được trong frame này
+        if (dist <= moveSpeedXZ) {
             clawPosition.x = DROP_ZONE.x;
             clawPosition.z = DROP_ZONE.z;
             currentClawState = STATE_DROPPING;
@@ -258,9 +294,14 @@ void updatePhysics(float deltaTime) {
             // Xác định phân bổ máng nhận quà bên ngoài sang 2 bên trái/phải cân đối
             int side = caughtToysCount % 2;
             int slotIndex = caughtToysCount / 2;
-            float targetX = (side == 0) ? (-1.8f - slotIndex * 0.5f) : (1.8f + slotIndex * 0.5f);
+
+            float spacingX = 0.8f;
+            float targetX = (side == 0) ? (-1.8f - slotIndex * spacingX) : (1.8f + slotIndex * spacingX);
+
+            float staggerZ = (slotIndex % 2 == 0) ? 0.2f : -0.2f;
+            float targetZ = 2.8f + staggerZ;
+
             float targetY = -3.2f;
-            float targetZ = 2.8f;
 
             // Nội suy di chuyển gấu trượt nghiêng từ khe cửa xập lăn ra ngoài khay
             listToys[exitingToyIndex].position.x = 0.0f + t * (targetX - 0.0f);
