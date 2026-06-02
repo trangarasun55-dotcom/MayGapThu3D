@@ -3,9 +3,10 @@ Hướng dẫn cài đặt và chạy chương trình
    - IDE: Mở và biên dịch dự án tốt nhất trên Visual Studio 2026 (hoặc các phiên bản VS hỗ trợ C++ tương đương).
    - Thư viện OpenGL/GLUT: Thư viện GLUT đã được nhóm tích hợp sẵn cục bộ vào trong thư mục glut/ của project (bao gồm các file .h, .lib, .dll).
    Project đã được thiết lập sẵn đường dẫn tương đối để nhận diện thư viện mà không cần cài đặt phức tạp ở môi trường ngoài.
-   (Nếu máy báo lỗi thiếu thư viện khi chạy trên thiết bị khác, hãy kiểm tra lại cấu hình **C/C++** trong **Properties**: **Additional Include directories** trỏ vào thư mục **glut**, **Linker Input** thêm **glut32.lib**, và **Environment** thêm **path=%path%;$(ProjectDir)\glut**).
 
-2. Cách mở và chạy Project
+(Nếu máy báo lỗi thiếu thư viện khi chạy trên thiết bị khác, hãy kiểm tra lại cấu hình **C/C++** trong **Properties**: **Additional Include directories** trỏ vào thư mục **glut**, **Linker Input** thêm **glut32.lib**, và **Environment** thêm **path=%path%;$(ProjectDir)\glut**).
+
+3. Cách mở và chạy Project
    - Tải toàn bộ mã nguồn về máy. Đảm bảo giữ nguyên cấu trúc phân cấp thư mục chứa mã nguồn cùng hai thư mục data/ (chứa texture) và glut/.
    - Mở tệp tin **MayGapThu3D_Nhom15_23CN1.sln** bằng Visual Studio.
    - Cấu hình project C/C++ trên VS: (thư viện ngoài)
@@ -15,7 +16,7 @@ Hướng dẫn cài đặt và chạy chương trình
    - Chuyển chế độ build sang Debug (hoặc Release) trên nền tảng **x86** (do thư viện GLUT là 32-bit).
    - Nhấn F5 hoặc click nút Local Windows Debugger để biên dịch và chạy chương trình.
      
-3. Hướng dẫn thao tác và điều khiển (Controls)
+4. Hướng dẫn thao tác và điều khiển (Controls)
    Chương trình hỗ trợ tương tác qua bàn phím và chuột để điều khiển trực tiếp máy gắp thú cũng như thay đổi góc nhìn camera linh hoạt không gian 3D.
    - Điều khiển càng gắp:
      + Phím Mũi tên Lên (Up): Di chuyển càng gắp lùi ra sau.
