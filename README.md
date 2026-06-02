@@ -12,7 +12,7 @@ Hướng dẫn cài đặt và chạy chương trình
    - Mở tệp tin **MayGapThu3D_Nhom15_23CN1.sln** bằng Visual Studio.
    - Cấu hình project C/C++ trên VS: (thư viện ngoài)
         + Các file .h/.hpp: Project properties -> C/C++ -> General -> Additional Include directoties -> điền thư mục glut
-        + Các file .lib:Project properties -> Linker -> Input -> Điền đường dẫn từng file **glut32.lib**
+        + Các file .lib:Project properties -> Linker -> Input -> Điền đường dẫn từng file glut32.lib;opengl32.lib;glu32.lib
         + Các file .dll:	Project properties -> Debugging -> Environment -> Điền cú pháp: path=%path%;<thư mục file dll>
    - Chuyển chế độ build sang Debug (hoặc Release) trên nền tảng **x86** (do thư viện GLUT là 32-bit).
    - Nhấn F5 hoặc click nút Local Windows Debugger để biên dịch và chạy chương trình.
